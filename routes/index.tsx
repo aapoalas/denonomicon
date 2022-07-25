@@ -22,7 +22,6 @@ interface Data {
 }
 
 export default function Denonomicon({ url, data }: PageProps<Data>) {
-  console.log("Serving Denonomicon");
   const path = url.pathname ? `/${url.pathname}` : "/introduction";
 
   const pageList = (() => {
