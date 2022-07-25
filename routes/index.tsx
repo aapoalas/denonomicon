@@ -22,7 +22,6 @@ interface Data {
 }
 
 export default function Denonomicon({ url, data }: PageProps<Data>) {
-  console.log("Pathname:", url.pathname);
   const path = url.pathname || "/introduction";
 
   const pageList = (() => {
@@ -67,6 +66,9 @@ export default function Denonomicon({ url, data }: PageProps<Data>) {
           {pageTitle === "" ? "Denonomicon" : `${pageTitle} | Denonomicon`}
         </title>
         <link rel="canonical" href={`${path}`} />
+        <link rel="stylesheet" href="https://deno.land/fonts/inter/inter.css" />
+        <link rel="stylesheet" href="https://deno.land/app.css" />
+        <link rel="stylesheet" href="https://deno.land/gfm.css" />
       </Head>
 
       <div class={tw`flex flex-col lg:flex-row`}>
@@ -89,10 +91,7 @@ export default function Denonomicon({ url, data }: PageProps<Data>) {
           <div
             class={tw`hidden w-full bg-gray-50 top-0 flex-shrink-0 overflow-y-auto flex-col border-y border-gray-200 lg:(block sticky w-72 border-0 border-r h-screen)`}
           >
-            <ToC
-              tableOfContents={data.tableOfContents}
-              path={path}
-            />
+            <ToC tableOfContents={data.tableOfContents} path={path} />
           </div>
         </div>
 
@@ -110,10 +109,7 @@ export default function Denonomicon({ url, data }: PageProps<Data>) {
               <Icons.GitHub class="inline" />
             </a>
 
-            <Markdown
-              source={data.content}
-              baseUrl={sourceURL}
-            />
+            <Markdown source={data.content} baseUrl={sourceURL} />
 
             <div class={tw`mt-4 pt-4 border-t border-gray-200`}>
               {pageList[pageIndex - 1] !== undefined && (
