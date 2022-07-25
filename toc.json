@@ -1,5 +1,36 @@
 {
   "introduction": {
     "name": "Introduction"
+  },
+  "basics": {
+    "name": "Basics"
+  },
+  "performance": {
+    "name": "Performance"
+  },
+  "philosophy-of-ffi": {
+    "name": "Philosophy of FFI"
+  },
+  "types": {
+    "name": "Types",
+    "children": {
+      "32-bit-integers": "32 bit and smaller integers",
+      "64-bit-integers": "64 bit and pointer integers",
+      "floating-point-numbers": "Floating point numbers",
+      "pointers": "Pointers",
+      "functions": "Functions",
+      "structs": "Structs"
+    }
+  },
+  "callbacks": {
+    "name": "Callbacks",
+    "children": {
+      "synchronous": "Synchronous callbacks",
+      "interrupt-handler": "Interrupt handler callbacks",
+      "thread-safe": "Thread safe callbacks"
+    }
+  },
+  "security": {
+    "name": "Security"
   }
 }
