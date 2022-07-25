@@ -4,8 +4,8 @@ Deno FFI supports the following types:
 
 | Type declaration      | Description                                        |
 | --------------------- | -------------------------------------------------- |
-| `"u8"`                | Eight bit (one byte) unsigned integer              |
-| `"i8"`                | Eight bit (one byte) signed integer                |
+| `"u8"`                | 8 bit (one byte) unsigned integer                  |
+| `"i8"`                | 8 bit (one byte) signed integer                    |
 | `"u16"`               | 16 bit (two byte) unsinged integer                 |
 | `"i16"`               | 16 bit (two byte) signed integer                   |
 | `"u32"`               | 32 bit (four byte) unsigned integer                |
