@@ -22,7 +22,8 @@ interface Data {
 }
 
 export default function Denonomicon({ url, data }: PageProps<Data>) {
-  const path = url.pathname ? `/${url.pathname}` : "/introduction";
+  console.log("Pathname:", url.pathname);
+  const path = url.pathname || "/introduction";
 
   const pageList = (() => {
     const tempList: { path: string; name: string }[] = [];
@@ -207,7 +208,7 @@ export const handler: Handlers<Data> = {
     }
 
     const sourceURL = getFileURL(
-      params.path ? `/${params.path}` : "/introduction",
+      url.pathname || "/introduction",
     );
     const [tableOfContents, content] = await Promise.all([
       getTableOfContents(),
