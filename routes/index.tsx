@@ -22,6 +22,7 @@ interface Data {
 }
 
 export default function Denonomicon({ params, data }: PageProps<Data>) {
+  console.log("Serving Denonomicon");
   const path = params.path ? `/${params.path}` : "/introduction";
 
   const pageList = (() => {
@@ -232,5 +233,5 @@ export const handler: Handlers<Data> = {
 };
 
 export const config: RouteConfig = {
-  routeOverride: "/:path*",
+  routeOverride: "/:path?",
 };
