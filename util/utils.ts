@@ -1,15 +1,9 @@
 // Copyright 2022 the Deno authors. All rights reserved. MIT license.
 
 const githubBasepath =
-  "https://raw.githubusercontent.com/aapoalas/denonomicon/";
-const docpath = "https://github.com/aapoalas/denonomicon/blob/";
+  "https://raw.githubusercontent.com/aapoalas/denonomicon/main/";
+const docpath = "https://github.com/aapoalas/denonomicon/blob/main/";
 
-export function getSourceURL(
-  module: string,
-  path: string,
-): string {
-  return encodeURI(`${CDN_ENDPOINT}${module}/raw${path}`);
-}
 
 export interface TableOfContents {
   [slug: string]: {
@@ -20,12 +14,8 @@ export interface TableOfContents {
   };
 }
 
-export function basepath() {
-  return getSourceURL("manual", "");
-}
-
 export async function getTableOfContents(): Promise<TableOfContents> {
-  const res = await fetch(`${githubBasepath}main/toc.json`);
+  const res = await fetch(`${githubBasepath}toc.json`);
   if (res.status !== 200) {
     throw Error(
       `Got an error (${res.status}) while getting the manual table of contents:\n${await res
@@ -36,7 +26,7 @@ export async function getTableOfContents(): Promise<TableOfContents> {
 }
 
 export function getFileURL(path: string): string {
-  return `${basepath()}${path}.md`;
+  return `${githubBasepath}${path}.md`;
 }
 
 export function getDocURL(path: string): string {
