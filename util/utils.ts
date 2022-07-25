@@ -25,7 +25,6 @@ export async function getTableOfContents(): Promise<TableOfContents> {
 }
 
 export function getFileURL(path: string): string {
-  console.log(path);
   return `${githubBasepath}${path}.md`;
 }
 

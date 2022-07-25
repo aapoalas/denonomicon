@@ -22,7 +22,9 @@ interface Data {
 }
 
 export default function Denonomicon({ url, data }: PageProps<Data>) {
-  const path = url.pathname || "/introduction";
+  const path = !url.pathname || url.pathname === "/"
+    ? "/introduction"
+    : url.pathname;
 
   const pageList = (() => {
     const tempList: { path: string; name: string }[] = [];
@@ -39,9 +41,7 @@ export default function Denonomicon({ url, data }: PageProps<Data>) {
 
     return tempList;
   })();
-  const pageIndex = pageList.findIndex(
-    (page) => page.path === path,
-  );
+  const pageIndex = pageList.findIndex((page) => page.path === path);
   const sourceURL = getFileURL(path);
 
   const tableOfContentsMap = (() => {
@@ -204,7 +204,7 @@ export const handler: Handlers<Data> = {
     }
 
     const sourceURL = getFileURL(
-      url.pathname || "/introduction",
+      !url.pathname || url.pathname === "/" ? "/introduction" : url.pathname,
     );
     const [tableOfContents, content] = await Promise.all([
       getTableOfContents(),
