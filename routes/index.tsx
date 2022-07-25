@@ -11,6 +11,7 @@ import { Markdown } from "@/components/Markdown.tsx";
 import * as Icons from "@/components/Icons.tsx";
 import {
   getDocURL,
+  getFileData,
   getFileURL,
   getTableOfContents,
   TableOfContents,
@@ -24,7 +25,7 @@ interface Data {
 export default function Denonomicon({ url, data }: PageProps<Data>) {
   const path = !url.pathname || url.pathname === "/"
     ? "/introduction"
-    : url.pathname;
+    : url.pathname as `/${string}`;
 
   const pageList = (() => {
     const tempList: { path: string; name: string }[] = [];
@@ -42,7 +43,7 @@ export default function Denonomicon({ url, data }: PageProps<Data>) {
     return tempList;
   })();
   const pageIndex = pageList.findIndex((page) => page.path === path);
-  const sourceURL = getFileURL(path);
+  const sourceURL = getFileURL(path, url.origin);
 
   const tableOfContentsMap = (() => {
     const map = new Map<string, string>();
@@ -203,25 +204,14 @@ export const handler: Handlers<Data> = {
       return Response.redirect(url);
     }
 
-    const sourceURL = getFileURL(
-      !url.pathname || url.pathname === "/" ? "/introduction" : url.pathname,
-    );
     const [tableOfContents, content] = await Promise.all([
       getTableOfContents(),
-      fetch(sourceURL)
-        .then(async (res) => {
-          if (res.status !== 200) {
-            await res.body?.cancel();
-            throw Error(
-              `Got an error (${res.status}) while getting the documentation file (${sourceURL}).`,
-            );
-          }
-          return res.text();
-        })
-        .catch((e) => {
-          console.error("Failed to fetch content:", e);
-          return "# 404 - Not Found\nWhoops, the page does not seem to exist.";
-        }),
+      getFileData(
+        !url.pathname || url.pathname === "/" ? "/introduction" : url.pathname,
+      ).catch((e) => {
+        console.error("Failed to fetch content:", e);
+        return "# 404 - Not Found\nWhoops, the page does not seem to exist.";
+      }),
     ]);
 
     return render!({ tableOfContents, content });
