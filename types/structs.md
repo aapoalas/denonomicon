@@ -11,4 +11,4 @@ is still possible to get the pointer integer value of a struct using the
 
 ## Fast API support
 
-See [Pointers](./pointers.md).
+See [Pointers](./pointers).

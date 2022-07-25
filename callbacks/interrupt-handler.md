@@ -13,6 +13,6 @@ minimal interrupt handlers that eg. only set a bitflag on the native library
 side. The FFI code should then be used to poll for the value of that bitflag.
 
 Note that interrupt handlers that fire on threads other than the isolate (main)
-thread are [thread safe callbacks](./thread-safe.md). These have their own
-working logic, and the above mentioned breaking of Deno runtime or V8 engine's
+thread are [thread safe callbacks](./thread-safe). These have their own working
+logic, and the above mentioned breaking of Deno runtime or V8 engine's
 expectations does not occur.

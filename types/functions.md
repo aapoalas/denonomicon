@@ -14,4 +14,4 @@ passed to FFI symbol calls as a pointer value.
 
 ## Fast API support
 
-See [Pointers](./pointers.md).
+See [Pointers](./pointers).
