@@ -200,7 +200,7 @@ function ToC({
 }
 
 export const handler: Handlers<Data> = {
-  async GET(req, { params, render }) {
+  async GET(req, { render }) {
     const url = new URL(req.url);
     if (url.pathname.endsWith(".md")) {
       url.pathname = url.pathname.slice(0, -3);
