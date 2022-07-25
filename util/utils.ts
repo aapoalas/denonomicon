@@ -4,7 +4,6 @@ const githubBasepath =
   "https://raw.githubusercontent.com/aapoalas/denonomicon/main/";
 const docpath = "https://github.com/aapoalas/denonomicon/blob/main/";
 
-
 export interface TableOfContents {
   [slug: string]: {
     name: string;
