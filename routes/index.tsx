@@ -233,5 +233,5 @@ export const handler: Handlers<Data> = {
 };
 
 export const config: RouteConfig = {
-  routeOverride: "/:path*?",
+  routeOverride: "*",
 };
