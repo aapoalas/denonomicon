@@ -1,0 +1,11 @@
+{
+  "tasks": {
+    "start": "deno run -A --watch=routes/,static/ dev.ts"
+  },
+  "compilerOptions": {
+    "types": [
+      "https://raw.githubusercontent.com/denoland/doc_components/829d636f5d9ed9ff722d6a8c2132427e2b044ada/jsx.d.ts"
+    ]
+  },
+  "importMap": "./import_map.json"
+}
