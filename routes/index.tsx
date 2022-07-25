@@ -21,9 +21,9 @@ interface Data {
   content: string;
 }
 
-export default function Denonomicon({ params, data }: PageProps<Data>) {
+export default function Denonomicon({ url, data }: PageProps<Data>) {
   console.log("Serving Denonomicon");
-  const path = params.path ? `/${params.path}` : "/introduction";
+  const path = url.pathname ? `/${url.pathname}` : "/introduction";
 
   const pageList = (() => {
     const tempList: { path: string; name: string }[] = [];
