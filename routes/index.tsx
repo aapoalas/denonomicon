@@ -72,66 +72,80 @@ export default function Denonomicon({ url, data }: PageProps<Data>) {
         <link rel="stylesheet" href="https://deno.land/gfm.css" />
       </Head>
 
-      <div class={tw`flex flex-col lg:flex-row`}>
-        <div>
-          <input
-            type="checkbox"
-            id="ToCToggle"
-            class={tw`hidden checked:siblings:flex checked:sibling:(border-0 children:first-child:rotate-90)`}
-            autoComplete="off"
-          />
+      <div>
+        <input
+          type="checkbox"
+          id="ToCToggle"
+          class={tw`hidden checked:siblings:last-child:children:first-child:flex checked:sibling:(border-0 children:children:first-child:rotate-90)`}
+          autoComplete="off"
+        />
 
-          <label
-            htmlFor="ToCToggle"
-            class={tw`lg:hidden ml-3.5 py-2 px-1.5 flex items-center gap-2 font-medium border-b border-gray-200`}
-          >
-            <Icons.ThinArrowRight />
+        <label
+          htmlFor="ToCToggle"
+          class={tw`lg:hidden block pl-5 py-2.5 font-medium border-b border-dark-border`}
+        >
+          <div class={tw`flex gap-2 items-center px-1.5`}>
+            <Icons.ArrowRight class="text-[#9CA0AA]" />
             Menu
-          </label>
-
-          <div
-            class={tw`hidden w-full bg-gray-50 top-0 flex-shrink-0 overflow-y-auto flex-col border-y border-gray-200 lg:(block sticky w-72 border-0 border-r h-screen)`}
-          >
-            <ToC tableOfContents={data.tableOfContents} path={path} />
           </div>
-        </div>
+        </label>
 
-        <main class={tw`focus:outline-none w-full flex flex-col`} tabIndex={0}>
+        <div
+          class={tw`flex flex-col mt-0 mb-16 lg:(flex-row mt-12 gap-12 section-x-inset-xl)`}
+        >
           <div
-            class={tw`section-x-inset-md pb-12 sm:pb-20 w-full justify-self-center flex-shrink-1`}
+            class={tw`hidden pb-2 w-full border-b border-dark-border lg:(pb-0 border-none block w-72 flex-shrink-0)`}
           >
-            <a
-              href={getDocURL(path)}
-              class={tw`text-gray-500 hover:text-gray-900 transition duration-150 ease-in-out float-right ${
-                path.split("/").length === 2 ? "mt-11" : "mt-9"
-              } mr-4`}
+            <div
+              class={tw`w-full space-y-4 section-x-inset-xl lg:section-x-inset-none`}
             >
-              <span class={tw`sr-only`}>GitHub</span>
-              <Icons.GitHub class="inline" />
-            </a>
-
-            <Markdown source={data.content} baseUrl={sourceURL} />
-
-            <div class={tw`mt-4 pt-4 border-t border-gray-200`}>
-              {pageList[pageIndex - 1] !== undefined && (
-                <a
-                  href={pageList[pageIndex - 1].path}
-                  class={tw`text-gray-900 hover:text-gray-600 font-normal`}
-                >
-                  ← {pageList[pageIndex - 1].name}
-                </a>
-              )}
-              {pageList[pageIndex + 1] !== undefined && (
-                <a
-                  href={pageList[pageIndex + 1].path}
-                  class={tw`text-gray-900 hover:text-gray-600 font-normal float-right`}
-                >
-                  {pageList[pageIndex + 1].name} →
-                </a>
-              )}
+              <ToC
+                tableOfContents={data.tableOfContents}
+                path={path}
+              />
             </div>
           </div>
-        </main>
+
+          <main
+            class={tw`focus:outline-none w-full flex flex-col section-x-inset-xl mt-7 lg:(section-x-inset-none mt-0)`}
+            tabIndex={0}
+          >
+            <div class={tw`w-full justify-self-center flex-shrink-1`}>
+              <a
+                href={getDocURL(path)}
+                class={tw`float-right py-2.5 px-4.5 rounded-md bg-[#F3F3F3] leading-none font-medium`}
+              >
+                Edit
+              </a>
+
+              <Markdown
+                source={data.content}
+                baseUrl={sourceURL}
+              />
+
+              <div class={tw`mt-14`}>
+                {pageList[pageIndex - 1] && (
+                  <a
+                    href={pageList[pageIndex - 1].path}
+                    class={tw`font-medium inline-flex items-center px-4.5 py-2.5 rounded-lg border border-dark-border gap-1.5`}
+                  >
+                    <Icons.ArrowLeft />
+                    <div>{pageList[pageIndex - 1].name}</div>
+                  </a>
+                )}
+                {pageList[pageIndex + 1] && (
+                  <a
+                    href={pageList[pageIndex + 1].path}
+                    class={tw`font-medium inline-flex items-center px-4.5 py-2.5 rounded-lg border border-dark-border gap-1.5 float-right text-right`}
+                  >
+                    <div>{pageList[pageIndex + 1].name}</div>
+                    <Icons.ArrowRight />
+                  </a>
+                )}
+              </div>
+            </div>
+          </main>
+        </div>
       </div>
 
       <script
@@ -155,31 +169,45 @@ function ToC({
   path: string;
 }) {
   return (
-    <nav class={tw`pt-2 pb-8 px-4`}>
+    <nav>
       <ol class={tw`list-decimal list-inside font-semibold nested`}>
         {Object.entries(tableOfContents).map(([slug, entry]) => {
           return (
-            <li key={slug} class={tw`my-2`}>
-              <a
-                href={`/${slug}`}
-                class={tw`${
+            <li key={slug}>
+              <input
+                type="checkbox"
+                id={slug}
+                class={tw`hidden checked:siblings:even:children:first-child:rotate-90 checked:siblings:last-child:block`}
+                checked={path.startsWith(`/${slug}/`)}
+                disabled={!entry.children}
+              />
+
+              <label
+                htmlFor={slug}
+                class={tw`flex items-center gap-2 px-2.5 py-2 rounded-md block ${
                   path === `/${slug}`
-                    ? "text-blue-600 hover:text-blue-500 toc-active"
-                    : "text-gray-900 hover:text-gray-600"
-                } font-bold`}
+                    ? "link bg-ultralight toc-active"
+                    : "hover:text-gray-600"
+                } font-semibold`}
               >
-                {entry.name}
-              </a>
+                <Icons.TriangleRight
+                  class={entry.children ? "" : "invisible"}
+                />
+                <a href={`/${slug}`}>
+                  {entry.name}
+                </a>
+              </label>
+
               {entry.children && (
-                <ol class={tw`pl-4 list-decimal nested`}>
+                <ol class={tw`list-decimal font-normal nested hidden`}>
                   {Object.entries(entry.children).map(([childSlug, name]) => (
-                    <li key={`${slug}/${childSlug}`} class={tw`my-0.5`}>
+                    <li key={`${slug}/${childSlug}`}>
                       <a
                         href={`/${slug}/${childSlug}`}
-                        class={tw`${
+                        class={tw`pl-8 pr-2.5 py-1 rounded-md block ${
                           path === `/${slug}/${childSlug}`
-                            ? "text-blue-600 hover:text-blue-500 toc-active"
-                            : "text-gray-900 hover:text-gray-600"
+                            ? "link bg-ultralight toc-active"
+                            : "hover:text-gray-600"
                         } font-normal`}
                       >
                         {name}
