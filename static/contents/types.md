@@ -6,11 +6,11 @@ Deno FFI supports the following types:
 | --------------------- | -------------------------------------------------- |
 | `"u8"`                | 8 bit (one byte) unsigned integer                  |
 | `"i8"`                | 8 bit (one byte) signed integer                    |
-| `"u16"`               | 16 bit (two byte) unsinged integer                 |
+| `"u16"`               | 16 bit (two byte) unsigned integer                 |
 | `"i16"`               | 16 bit (two byte) signed integer                   |
 | `"u32"`               | 32 bit (four byte) unsigned integer                |
 | `"i32"`               | 32 bit (four byte) signed integer                  |
-| `"u64"`               | 64 bit (eight byte) unsinged integer               |
+| `"u64"`               | 64 bit (eight byte) unsigned integer               |
 | `"i64"`               | 64 bit (eight byte) signed integer                 |
 | `"f32"`               | 32 bit (four byte) IEEE 754 floating point number  |
 | `"f64"`               | 64 bit (eight byte) IEEE 754 floating point number |
