@@ -94,7 +94,7 @@ parameter for any `Deno` namespace APIs or for any built-in Web APIs either.
 > Doing _anything_ with the buffer from JS while it's being held by the FFI side
 > is sus at best.
 >
-> &mdash <cite>Andreu Botella</cite>
+> &mdash; <cite>Andreu Botella</cite>
 
 There is also a way to cause data races with the FFI APIs without calling into
 native code. The `Deno.UnsafePointer.of()` API gives a way to get a pointer from
