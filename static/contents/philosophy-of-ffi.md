@@ -29,11 +29,13 @@ pointers, essentially `*mut c_void` pointers from a Rust viewpoint.
 This means that the Deno FFI layer will not help you in any way with making sure
 that your FFI code is sound. It is possible to access memory beyond the
 boundaries associated with a given pointer through that pointer, and Deno FFI
-will itself not warn, complain or throw an error in any shape or form. The two
-possible results of such out-of-bounds access are that either memory will
-successfully be read, or the operating system detects the process reading memory
-outside of its allocated memory and terminates the process immediately. Needless
-to say, this is quite fun to say the least.
+will itself not warn, complain or throw an error in any shape or form. Likewise
+it's possible to read memory from a completely made-up pointer. This is of
+course undefined behaviour from any reasonable language's point of view. What
+actually happens if this is done is one of two possible results: Either memory
+will successfully be read, or the operating system detects the process reading
+memory outside of its allocated memory and terminates the process immediately.
+Needless to say, this is quite fun.
 
 ## Ownership
 
