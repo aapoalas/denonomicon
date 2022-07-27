@@ -86,6 +86,19 @@ or possibly no bytes at all or even a null pointer is not something that Deno
 FFI will know or care about. In this way, it may be more correct to call Deno
 FFI an implementation of the C API in Deno.
 
+Likewise there is no guards against data races with buffers. FFI's own
+`nonblocking` setting will cause JavaScript buffers to be sent as pointers to a
+foreign thread, and there is of course nothing stopping native libraries to do
+the same. Effectively this means that the buffer might be concurrently read from
+and written to by different threads, leading to data races. It is the FFI user's
+responsibility to make sure this does not happen.
+
+It's also possible to create a pointer from a buffer, send that pointer to a
+Worker thread and get concurrent access to the buffer by creating a buffer from
+the pointer. This breaks a lot of expectations about buffers and concurrency at
+the engine level, will lead to data races and is all in all a great route to
+undefined behaviour. Do not do it.
+
 Another point of interest is 8 and 16 bit integers. JavaScript does not have
 integers in the strict sense, but the V8 engine does implement an internal 32
 bit unsigned and signed integer class. Any 8 or 16 bit integers will thus be

@@ -70,3 +70,28 @@ API support arrives one day) and `ArrayBuffer`s and `TypedArray`s.
 Thus, Fast API calls only work for such pointers that fit within the
 `Number.MAX_SAFE_INTEGER` limit and are used as parameters. Pointer type return
 values always deopt the symbol call.
+
+## Concurrent access and data races
+
+Whenever an `ArrayBuffer` or `TypedArray` is sent to a native library through an
+FFI call, whether that call be `nonblocking` or synchronous, the buffer's memory
+becomes accessible to the native library for as long as it holds the pointer.
+For synchronous calls where the native library does not save the pointer, there
+is no issue. For `nonblocking` calls the FFI user should make sure to not read
+or write into the buffer before the call's Promise resolves. For cases where the
+native library saves the pointer for some indeterminate time, the FFI user needs
+to manually ensure that the buffer isn't being used concurrently. Otherwise data
+races are guaranteed to occur.
+
+There is also a way to cause data races with the FFI APIs without calling into
+native code. The `Deno.UnsafePointer.of()` API gives a way to get a pointer from
+a JavaScript created buffer. Then, the `Deno.UnsafePointerView.getArrayBuffer()`
+API (static or instance method) allows for an `ArrayBuffer` to be created from a
+pointer value, where the buffer is backed by the pointer's memory and not merely
+a copy of it. Combined, these two APIs make it possible to send pointers to
+normal buffers to a Worker thread and get concurrent access to the buffer's
+memory. This can probably allow for all sorts of wacky things, all of which are
+better done using `SharedArrayBuffer`. Doing this also breaks buffer related
+assumptions on the V8 engine level, and as such is sure to lead to undefined
+behaviour. Do not do this. And when you do, send play-by-play documents of what
+sort of wacky weirdness you find so I can enjoy it as well.
