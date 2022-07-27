@@ -76,12 +76,25 @@ values always deopt the symbol call.
 Whenever an `ArrayBuffer` or `TypedArray` is sent to a native library through an
 FFI call, whether that call be `nonblocking` or synchronous, the buffer's memory
 becomes accessible to the native library for as long as it holds the pointer.
+
 For synchronous calls where the native library does not save the pointer, there
 is no issue. For `nonblocking` calls the FFI user should make sure to not read
 or write into the buffer before the call's Promise resolves. For cases where the
 native library saves the pointer for some indeterminate time, the FFI user needs
 to manually ensure that the buffer isn't being used concurrently. Otherwise data
 races are guaranteed to occur.
+
+Also note that passing the buffer as a parameter to asynchronous `Deno`
+namespace APIs like `Deno.read` also counts as concurrently using the buffer.
+This means that while the API call is happening, you should not attempt to read
+from or write into the buffer. This is true even when FFI is not used. Even
+moreso, if you've passed a buffer to FFI then you shouldn't use it as a
+parameter for any `Deno` namespace APIs or for any built-in Web APIs either.
+
+> Doing _anything_ with the buffer from JS while it's being held by the FFI side
+> is sus at best.
+>
+> &mdash <cite>Andreu Botella</cite>
 
 There is also a way to cause data races with the FFI APIs without calling into
 native code. The `Deno.UnsafePointer.of()` API gives a way to get a pointer from
@@ -95,3 +108,37 @@ better done using `SharedArrayBuffer`. Doing this also breaks buffer related
 assumptions on the V8 engine level, and as such is sure to lead to undefined
 behaviour. Do not do this. And when you do, send play-by-play documents of what
 sort of wacky weirdness you find so I can enjoy it as well.
+
+## Dangling pointers
+
+Concurrent access to buffers is "sus at best" but not doing anything with a
+buffer is also a recipe for disaster by way of dangling pointers. Here's an
+example:
+
+```ts
+// ffi.ts
+const STATIC_BUFFER = new Uint32Array(2);
+const STATIC_BUFFER_PTR = Deno.UnsafePointer.of(STATIC_BUFFER);
+
+export const callWithStaticBuffer = (pointer: Deno.PointerValue) => {
+  lib.symbols.call_pointer_with_u32x2(pointer, STATIC_BUFFER_PTR);
+};
+```
+
+Looks simple enough: A buffer containing two 32 bit numbers is created and a
+pointer number referencing said buffer is then created from that. The
+`callWithStaticBuffer` function then uses the pointer number when calling an FFI
+API. There seems to be no direct issue with any of this, and that is not true at
+all.
+
+This code will lead to undefined behaviour. The reason is simple: V8 will
+garbage collect the `STATIC_BUFFER` after the `STATIC_BUFFER_PTR` number has
+been created as it can tell that no one will ever access the buffer again. The
+memory will get reused and `call_pointer_with_u32x2` will find random data
+behind the second pointer it has been given.
+
+A possible fix might be to `export` the `STATIC_BUFFER`. Alternatively, assign
+the `STATIC_BUFFER` to an object that is then exported. Even if the
+`STATIC_BUFFER` is assigned using a `Symbol` that is not itself exported and
+thus the buffer isn't really accessible to code outside the `ffi.ts` it is still
+probably enough to keep the buffer from being garbage collected.
