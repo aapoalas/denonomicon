@@ -38,38 +38,65 @@ iterator.
 
 ### Pointer integers
 
-Any `BigInt` value can be passed as a pointer integer to an FFI symbol. Usually
-these values are expected to either be returned from FFI symbol calls that
-return pointers themselves, or from the `Deno.UnsafePointer.of()` call. However,
-this is not guaranteed in any shape or form and thus it is entirely possible to
-call a foreign library with made-up pointer values. What happens when that is
-done is totally undefined and depends entirely on where the pointer happens to
-point into. The program may crash with a segfault, or data may become corrupted
-and anything and everything may become possible.
+Any `BigInt` or `number` value can be passed as a pointer integer to an FFI
+symbol. Usually these values are expected to either be returned from FFI symbol
+calls that return pointers themselves, or from the `Deno.UnsafePointer.of()`
+call.
+
+However, there is nothing stopping anyone from calling a foreign library with
+made-up pointer values. What happens when that is done is totally undefined and
+depends entirely on where the pointer happens to point into. The program may
+crash with a segfault, or data may become corrupted and anything and everything
+may become possible.
 
 ### Null pointers
 
-Null pointers can be passed in as parameters either using `null` or `0n`. The
-first will always work and will always cause a depot, as the V8 Fast API does
-not support `null`. The latter is dependent on the system architecture (numeric
-value of null pointer is not necessarily zero) but should generally work for all
-modern computers that Deno supports. It may also gain V8 Fast API support at
-some point.
+Null pointers can be passed in as parameters either using `null`, `0` or `0n`.
+The first will always work and will always cause a depot, as the V8 Fast API
+does not support `null`. The latter two are dependent on the system architecture
+(numeric value of null pointer is not necessarily zero) but should generally
+work for all modern computers that Deno supports.
 
 ## Fast API support
 
-V8's Fast API does not currently support BigInts and its support for 64 bit
-integers is limited to number type parameters, meaning values equal or less than
-`Number.MAX_SAFE_INTEGER`. It is thus not possible to return a 64 bit pointer
-integer value using V8 Fast API calls. Additionally, V8's Fast API does not
-support parameter type overloads (except for TypedArray / Array of primitives
-overloads) and as such it is not possible for Deno to directly support
-overloaded pointer parameters that would accept both numbers (BigInts if Fast
-API support arrives one day) and `ArrayBuffer`s and `TypedArray`s.
+Deno FFI offers limited support for 64 bit numbers as parameters and full
+support as return values (see [64 bit integers](./64-bit-integers) for details).
+However, Deno versions 1.24.2 and 1.24.3 prefer `Uint8Array` buffers for the
+Fast API path. In versions after 1.24.3 this will change with the introduction
+of a new `"buffer"` FFI type which will split the pointer support to pointer
+numbers and pointer buffers.
 
-Thus, Fast API calls only work for such pointers that fit within the
-`Number.MAX_SAFE_INTEGER` limit and are used as parameters. Pointer type return
-values always deopt the symbol call.
+This change is partially caused by V8's Fast API not supporting type overloads
+between 64 bit integers and TypedArrays. Because of this, Deno must choose what
+type it prefers on the fast path and what it knocks down onto the slow path. The
+choice is then obvious to have different parameter types for the two cases.
+
+Let's recap.
+
+### Before 1.24.2
+
+Pointers were always represented by BigInt values. No fast path support for
+pointer values existed.
+
+### 1.24.2, 1.24.3
+
+In 1.24.2 pointers became represented by numbers or BigInts depending on the
+numerical value of the pointer. This made it possible to support plain number
+pointer integers on the fast path, but the choice was made to prefer
+`Uint8Array`s. Fast path support for returning 64 bit numbers, including
+pointers, was also added.
+
+Passing pointer parameters as `Uint8Array`s is the optimal call strategy.
+Returning pointers on the fast path works.
+
+### After 1.24.3
+
+Pointer parameter types split further to `"buffer"` and `"pointer"`.
+
+Passing `"buffer"` type pointer parameters as `Uint8Array`s, and `"pointer"`
+type pointer parameters as numbers is the optimal call strategy. Returning
+pointers, whether as type `"buffer"` or `"pointer"`, still always return as
+numbers or BigInts depending on the numerical value of the pointer.
 
 ## Concurrent access and data races
 

@@ -11,4 +11,9 @@ is still possible to get the pointer integer value of a struct using the
 
 ## Fast API support
 
-See [Pointers](./pointers).
+It can be expected that full Fast API support for structs will be created in due
+time.
+
+For parameters the preferred type will quite definitely be `Uint8Array`, and
+return values will likely return JS-side pre-allocated `Uint8Array`s that get
+passed as extra parameters to the calls.

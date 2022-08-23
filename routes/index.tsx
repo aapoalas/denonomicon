@@ -63,7 +63,11 @@ export default function Denonomicon({ url, data }: PageProps<Data>) {
   return (
     <>
       <Head>
-        <link rel="icon" href="/denonomicon.ico" sizes="32x32 128x128 180x180 192x192" />
+        <link
+          rel="icon"
+          href="/denonomicon.ico"
+          sizes="32x32 128x128 180x180 192x192"
+        />
         <link rel="icon" href="/denonomicon.svg" type="image/svg+xml" />
 
         <title>
