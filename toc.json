@@ -30,6 +30,9 @@
       "thread-safe": "Thread safe callbacks"
     }
   },
+  "fast-api": {
+    "name": "V8 Fast API"
+  },
   "security": {
     "name": "Security"
   }

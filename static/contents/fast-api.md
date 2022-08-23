@@ -1,4 +1,4 @@
-# Fast API
+# V8 Fast API: What is it?
 
 The V8 Fast API is an extra binding API meant to offer a low-level interface
 between V8's optimised JavaScript execution and external C API functions. The
