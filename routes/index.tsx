@@ -63,6 +63,9 @@ export default function Denonomicon({ url, data }: PageProps<Data>) {
   return (
     <>
       <Head>
+        <link rel="icon" href="/denonomicon.ico" sizes="32x32 128x128 180x180 192x192" />
+        <link rel="icon" href="/denonomicon.svg" type="image/svg+xml" />
+
         <title>
           {pageTitle === "" ? "Denonomicon" : `${pageTitle} | Denonomicon`}
         </title>
@@ -99,6 +102,10 @@ export default function Denonomicon({ url, data }: PageProps<Data>) {
             <div
               class={tw`w-full space-y-4 section-x-inset-xl lg:section-x-inset-none`}
             >
+              <img
+                src="/denonomicon-title.svg"
+                alt="Denonomicon title SVG"
+              />
               <ToC
                 tableOfContents={data.tableOfContents}
                 path={path}
