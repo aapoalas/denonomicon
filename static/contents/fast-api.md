@@ -126,31 +126,44 @@ the generic binding layer API.
 
 There are a few catches with Fast API:
 
-1. Not all JavaScript calls are nice and expected.
+- Not all JavaScript calls are nice and expected.
 
 Sometimes users make a mistake and call your carefully laid binding function
 with the wrong type of argument. When this happens the slow call path needs to
-be taken, as fast calls cannot throw exceptions.
+be taken, as the fast call C function API cannot accept wrong argument types.
 
-2. The API surface needs to be limited.
+Even if the argument types themselves match it's still possible that the fast
+call may need to fall back onto the slow call. This is something that the fast
+call can do optionally, for example if it expects a single argument with a `u32`
+value of 0, 1 or 2, but receives `42`. In compiled code this might often be
+grounds to an exception, but in Fast API the call can do an early return and
+signal to V8 that the slow call should be called for the purpose of throwing a
+proper JavaScript exception.
+
+- The API surface needs to be limited.
 
 32 bit integers are easy, but for example expecting V8 to optimally convert your
 JavaScript object into a C struct automatically is probably too much to ask.
 
-3. No allocating into the V8 heap.
+Even relatively simple things like strings are not yet supported by Fast API
+even as parameters.
+
+- No allocating into the V8 heap.
 
 For now at least, V8 does not allow fast calls to do allocations on the V8 heap.
 This means that returning any object-like types is out of the question. This
-rules out not only objects and arrays, but also TypedArrays such as `Uint8Array`
-and even BigInts.
+rules out returning not only objects and arrays, but also TypedArrays such as
+`Uint8Array` and even BigInts.
 
-4. It's experimental.
+- It's experimental.
 
 V8 may be a pretty solid JavaScript engine but Fast API is very much
 experimental and only really beginning to take a strong shape. Deno-related Fast
-API usage has uncovered at least two major bugs so far (wrong calling convention
-on Apple Silicon, invalid function template data type in fast call options
-struct).
+API usage has uncovered at least two major bugs so far
+([wrong calling convention
+on Apple Silicon](https://bugs.chromium.org/p/v8/issues/detail?id=13171),
+[invalid function template data type in fast call options
+struct](https://chromium-review.googlesource.com/c/v8/v8/+/3844662)).
 
 Still, one can expect Fast API to do great things for both Deno, FFI and V8
 engine usage in general. The ability to call into native code at native speeds
