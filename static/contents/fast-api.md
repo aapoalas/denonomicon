@@ -45,6 +45,8 @@ written in Rust, though V8 code is of course actually in C++):
 ```rs
 /// Optimised from `globalThis.add_two`
 fn js_add_two_binding_turbofan_jit(context: *const V8ExecutionContext, p0: u32, p1: u32) -> u32 {
+    let p0 = v8::Local::<v8::Value>::cast(v8::Integer::new_from_unsigned(context, p0));
+    let p1 = v8::Local::<v8::Value>::cast(v8::Integer::new_from_unsigned(context, p1));
     let info = FunctionCallbackInfo::new(context, &[p0, p1]);
     v8_bind(info);
     // Next:
