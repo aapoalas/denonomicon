@@ -89,7 +89,7 @@ pointers, was also added.
 Passing pointer parameters as `Uint8Array`s is the optimal call strategy.
 Returning pointers on the fast path works.
 
-### After 1.24.3
+### 1.25.0 onwards
 
 Pointer parameter types split further to `"buffer"` and `"pointer"`.
 
