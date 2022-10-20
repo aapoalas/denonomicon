@@ -9,27 +9,42 @@ FFI supports pointers in various flavours:
 Passing a pointer into an FFI call does nothing to the memory that the pointer
 points to, at least directly, nor does it keep the memory from being garbage
 collected if it is or points to a JavaScript allocated buffer. There is no
-passing of ownership directly implied by pointer parameter, and whether or not
+passing of ownership directly implied by a pointer parameter, and whether or not
 ownership (ie. responsibility to trigger deallocation) remains with the
 JavaScript side or is transferred to the native library side is entirely
 dependent on the native library and its expectations for the API.
 
-FFI offers no checks or validation of whether the pointer is actually valid for
+FFI offers no checks nor validation of whether the pointer is actually valid for
 the call or not. eg. It is possible to pass a buffer of size 0 as any pointer
 parameter, completely irrespective of the expected size of the memory the
 pointer should refer to.
 
-Any FFI symbol returning a pointer will always return a BigInt, though this may
-change in the future (PR pending).
+Any FFI symbol returning a `"pointer"`, `"buffer"` or `"function"` will return
+either a number or a BigInt (essentially always a number), depending on if the
+pointer can be safely represented as a number. Note that there is no difference
+between the three as return values, they can only be though of being different
+in terms of documentation at best.
 
 ### Buffers
 
 Any `ArrayBuffer` or `TypedArray` (`Uint8Array` etc.) created in JavaScript can
-be passed as a pointer parameter to an FFI symbol. It is also possible to get
-the pointer integer value from a buffer using the `Deno.UnsafePointer.of()`
-static method (requires FFI permissions). Passing the buffer directly or passing
-the pointer integer value of the buffer is 100% equal in function, though not
-necessarily in performance.
+be passed as a `"buffer"` type parameter to an FFI symbol. It is also possible
+to get the pointer integer value from a buffer using the
+`Deno.UnsafePointer.of()` static method (requires FFI permissions) for passing
+as a `"pointer"` type parameter. Similarly, it is possible to do the reverse
+using `Deno.UnsafePointerView.getArrayBuffer(pointer, 1)` (setting length as 0
+would return a null pointer).
+
+Passing the buffer directly or passing the pointer integer value of the buffer
+is 100% equal in function from the native library point of view, the only
+difference is in what parameter type to declare.
+
+Note that it is much quicker to get the pointer integer value of a buffer using
+`Deno.UnsafePointer.of()` than creating an ArrayBuffer from a pointer using
+`Deno.UnsafePointerView.getArrayBuffer()`. As such, if you have a symbol that
+will be called with both external pointers and owned buffers, it may be better
+to define it as taking a `"pointer"` parameter. Be careful of danging pointers,
+though.
 
 Passing in a too-small buffer as a pointer parameter will likely lead to
 undefined behaviour and can not be recommended in any circumstances. Note though
@@ -38,10 +53,10 @@ iterator.
 
 ### Pointer integers
 
-Any `BigInt` or `number` value can be passed as a pointer integer to an FFI
-symbol. Usually these values are expected to either be returned from FFI symbol
-calls that return pointers themselves, or from the `Deno.UnsafePointer.of()`
-call.
+Any `BigInt` or `number` value can be passed as a `"pointer"` type parameter to
+an FFI symbol. Usually these values are expected to either be returned from FFI
+symbol calls that return pointers themselves, or from the
+`Deno.UnsafePointer.of()` call.
 
 However, there is nothing stopping anyone from calling a foreign library with
 made-up pointer values. What happens when that is done is totally undefined and
@@ -155,8 +170,8 @@ export const callWithStaticBuffer = (pointer: Deno.PointerValue) => {
 Looks simple enough: A buffer containing two 32 bit numbers is created and a
 pointer number referencing said buffer is then created from that. The
 `callWithStaticBuffer` function then uses the pointer number when calling an FFI
-API. There seems to be no direct issue with any of this, and that is not true at
-all.
+symbol. There seems to be no direct issue with any of this, and that is not true
+at all.
 
 This code will lead to undefined behaviour. The reason is simple: V8 will
 garbage collect the `STATIC_BUFFER` after the `STATIC_BUFFER_PTR` number has

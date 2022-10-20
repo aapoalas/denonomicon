@@ -4,6 +4,7 @@ Deno FFI supports the following types:
 
 | Type declaration      | Description                                        |
 | --------------------- | -------------------------------------------------- |
+| `"bool"`              | Boolean value                                      |
 | `"u8"`                | 8 bit (one byte) unsigned integer                  |
 | `"i8"`                | 8 bit (one byte) signed integer                    |
 | `"u16"`               | 16 bit (two byte) unsigned integer                 |
@@ -16,6 +17,7 @@ Deno FFI supports the following types:
 | `"f64"`               | 64 bit (eight byte) IEEE 754 floating point number |
 | `"usize"`             | Pointer size unsigned integer                      |
 | `"isize"`             | Pointer size signed integer                        |
+| `"buffer"`            | Generic JavaScript buffer                          |
 | `"pointer"`           | Generic pointer                                    |
 | `"function"`          | Generic function pointer                           |
 | `{ "struct": [...] }` | Struct-by-value with given fields (PR pending)     |

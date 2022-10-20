@@ -14,20 +14,8 @@ let u8_value = v8::Local::<v8::Uint32>::try_from(arg) // `v8::Uint32` is the V8'
   .value() as u8; // the `.value()` method (`Value()` in C++ API) returns a `u32`
 ```
 
-and in V8 Fast API calls using implicit C casts as follows:
-
-```C
-#include <stdint.h>
-
-// External C API symbol taking two 8 bit integers as parameters
-extern int8_t func(int8_t p0, uint8_t p1);
-
-// Internal V8 Fast API call trampoline taking a receiver object and two 32 bit integers as parameters
-int8_t func_trampoline(void* recv, int32_t p0, uint32_t p1) {
-  // Implicit C cast occurs in the assembly output
-  return func(p0, p1);
-}
-```
+and in V8 Fast API calls using dedicated CPU calls to copy only the used bytes
+from the return value, zeroing or sign-extending the rest.
 
 ## Fast API support
 

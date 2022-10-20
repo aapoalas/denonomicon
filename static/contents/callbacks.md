@@ -102,6 +102,11 @@ increased by one. Conversely, unref'ing a callback decreases the ref count by
 one and when the ref count reaches zero, the callback no longer keeps Deno from
 exiting.
 
-**Note that currently, ref'ing a callback will cause Deno to spin the event loop
-at 100% CPU! Before the bug is fixed, it's better to avoid ref'ing callbacks and
-instead use eg. a `setInterval`!**
+Note that until Deno version 1.26.2, ref'ing a callback would cause Deno to spin
+the event loop at 100% CPU. If you need to use FFI callbacks on an older Deno
+version, it's better to avoid ref'ing callbacks and instead use eg. a
+`setInterval` to keep the process alive. Also note that the interval you set
+determines how often your callbacks are checked for incoming thread safe calls.
+If you set the interval very high, eg. 1000 milliseconds, then your thread safe
+calls will also have to wait up to that amount of time before they get called on
+the main thread.

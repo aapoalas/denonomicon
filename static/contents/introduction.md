@@ -2,14 +2,19 @@
 
 # Introduction
 
-This document is incomplete and haunted by spirits conjured into existence by
-the evils within. Be protected by the Deno Shrine Maiden.
+This document is not written by, or associated with the Deno team in any way.
+The information here is incomplete and haunted by spirits conjured into
+existence by the evils within. Go in peace, take heed and remember that this is
+all written by a third party.
+
+Go forth, and be protected by the Deno Shrine Maiden.
 
 ## The Dark Arts of Deno Foreign Function Interface
 
 The Denonomicon digs into all the sordid details of the Deno Foreign Function
-Inteface (henceforth Deno FFI). It is intended to bridge any knowledge gaps left
-behind by the [Deno Manual] and TypeScript definitions of FFI.
+Inteface (henceforth Deno FFI or just FFI). It is intended to bridge any
+knowledge gaps left behind by the [Deno Manual] and TypeScript definitions of
+FFI.
 
 This document will not provide guidance on TypeScript programming itself, nor
 will it explain any Deno specific APIs used other than FFI itself. If you want

@@ -41,7 +41,7 @@ throw an error if a declared symbol name is not found in the library. Symbol
 types cannot be and are not checked by the open function, so the type
 declarations and their validity are left entirely up to the user.
 
-Calling the symbols returned by `Deno.dlopen` do not require the `--allow-ffi`
+Calling the symbols returned by `Deno.dlopen` does not require the `--allow-ffi`
 flag. As such, it is possible to revoke FFI permissions after opening a library
 and still keep using the symbols.
 

@@ -176,7 +176,8 @@ As of writing this, these are the known supported types of Fast API.
 ### Parameters
 
 - Booleans
-- Arrays of primitive types (integers and floating point numbers)
+- Arrays (passed as `Local<Array>`, so essentially only primitive values can be
+  used)
 - 32 bit integers
 - 64 bit integers (JavaScript numbers, meaning limited to
   `Number.MAX_SAFE_INTEGER`)
@@ -185,9 +186,7 @@ As of writing this, these are the known supported types of Fast API.
   `BigUint64Array`, and `BigInt64Array`
 - Catch-all `v8::Local<v8::Value>`: This can theoretically be used to pass any
   value to a fast call but most `v8::Value`s cannot be used in a reasonable
-  fashion due to V8 heap allocations being forbidden. `v8::Local<v8::String>` is
-  a notable exception, as writing a string's content into a `char*` buffer does
-  not require heap allocations.
+  fashion due to V8 heap allocations being forbidden.
 
 ### Return types
 
