@@ -61,6 +61,12 @@ by using nonblocking calls.
 
 ## Example performance results:
 
+The following table gives example performance results of calling native library
+symbols that either only take a single parameter of a type, or return a static
+value of the type. The performance results should give a basic idea of what sort
+of baseline performance one can expect of a native library symbol call with
+these kind of simple signatures.
+
 | Operation                           | Slow call performance | Fast call performance |
 | ----------------------------------- | --------------------- | --------------------- |
 | No-op                               | 46 ns                 | 6 ns                  |
