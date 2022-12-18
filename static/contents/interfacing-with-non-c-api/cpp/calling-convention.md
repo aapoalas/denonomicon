@@ -1,6 +1,6 @@
 # C++ calling convention
 
-When interfacing with a C++ library the thin you'll need to learn is the
+When interfacing with a C++ library the thing you'll need to learn is the
 differences in calling convention. We'll take as an example a trivial C++ class
 and explore writing an FFI interface for it.
 
@@ -32,7 +32,7 @@ compiler and/or target architecture, but on Linux the resulting name is probably
 going to be `_ZNK3lib7Example6methodEv`. The Internet holds many sources for C++
 name mangling, but a basic "demangling" of this mangled name is:
 
-1. `_Z`: All manged names start with this prefix.
+1. `_Z`: All mangled names start with this prefix.
 2. `N`: This is a nested name.
 3. `3lib`, `7Example`, `6method`: The parts of the nested name, prefixed by
    their lengths.
@@ -46,13 +46,13 @@ name:
 ```ts
 const lib = Deno.dlopen(
   "./libexample.so",
-    {
-        lib__Example__method(): {
-            name: "_ZNK3lib7Example6methodEv",
-            parameters: ["buffer"],
-            result: "void",
-        },
+  {
+    lib__Example__method: {
+      name: "_ZNK3lib7Example6methodEv",
+      parameters: ["buffer"],
+      result: "void",
     },
+  },
 );
 lib.symbols.lib__Example__method(new Uint8Array());
 ```
@@ -66,15 +66,15 @@ bindings which corresponds to the `this` argument for the call.
 
 ### Finding mangled names
 
-There are probably many good ways to find the manged names of your C++ methods.
+There are probably many good ways to find the mangled names of your C++ methods.
 The `libclang` library provides an API to get the different mangled names (there
 can be many in some cases) of a C++ method, so that could be used to automate
 finding the mangled names and mapping them to "plain text" accessor names.
 
 A more manual way (on Linux) is to use the output of the `nm` command. Searching
-through the output is tedious but it's a definitely possible to write even
-complex C++ FFI interfaces using this method. Just hope that the API doesn't
-change too often.
+through the output is tedious but it's definitely possible to write even complex
+C++ FFI interfaces using this method. Just hope that the API doesn't change too
+often.
 
 ## Constructors
 
