@@ -27,6 +27,6 @@ There are quite a few issues to deal with when writing an FFI interface to a C++
 library. Some of these may not be solveable, while others may actually work in
 your favour. Let's explore some of them:
 
-- [C++ calling convention](./cpp/calling-convention)
-- [C++ inheritance](./cpp/inheritance)
-- [C++ std::function](./cpp/std-function)
+- [C++ calling convention](./interfacing-with-non-c-api/cpp/calling-convention)
+- [C++ inheritance](./interfacing-with-non-c-api/cpp/inheritance)
+- [C++ std::function](./interfacing-with-non-c-api/cpp/std-function)
