@@ -1,0 +1,6 @@
+{
+  "version": "2",
+  "remote": {
+    "https://raw.githubusercontent.com/denoland/doc_components/829d636f5d9ed9ff722d6a8c2132427e2b044ada/jsx.d.ts": "3860591313e8efa773446e746564bbba0c3c5b50a2955dcea1f22bbee68841ea"
+  }
+}

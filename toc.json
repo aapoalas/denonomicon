@@ -36,5 +36,13 @@
   },
   "security": {
     "name": "Security"
+  },
+  "interfacing-with-non-c-api": {
+    "name": "Interfacing with non-C API libraries",
+    "children": {
+      "cpp/calling-convention": "C++ calling convention",
+      "cpp/inheritance": "C++ inheritance",
+      "cpp/std-function": "C++ `std::function`"
+    }
   }
 }
