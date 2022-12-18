@@ -42,7 +42,7 @@
     "children": {
       "cpp/calling-convention": "C++ calling convention",
       "cpp/inheritance": "C++ inheritance",
-      "cpp/std-function": "C++ `std::function`"
+      "cpp/std-function": "C++ std::function"
     }
   }
 }
