@@ -20,7 +20,7 @@ Deno FFI supports the following types:
 | `"buffer"`            | Generic JavaScript buffer                          |
 | `"pointer"`           | Generic pointer                                    |
 | `"function"`          | Generic function pointer                           |
-| `{ "struct": [...] }` | Struct-by-value with given fields (PR pending)     |
+| `{ "struct": [...] }` | Struct-by-value with given fields                  |
 
 The actual size of "pointer size" depends on the bitness of the environments. 32
 bit computers will have 32 bit pointers and 64 bit computers will have 64 bit
