@@ -246,7 +246,7 @@ void deletingObjectDestructor(Base* instance) {
 
 As the name implies, the deleting object destructor will actually call `free()`
 on the memory associated with `instance`. Thus, building an FFI interface to
-`baseObjectDestructor` here and calling it with a `Uint8Array` is not safe and
+`deletingObjectDestructor` here and calling it with a `Uint8Array` is not safe and
 will almost certainly lead to the program crashing.
 
 [System V ABI]: https://wiki.osdev.org/System_V_ABI
