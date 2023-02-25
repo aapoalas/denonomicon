@@ -137,7 +137,7 @@ If you set the interval very high, eg. 1000 milliseconds, then your thread safe
 calls will also have to wait up to that amount of time before they get called on
 the main thread.
 
-Before Deno version 1.30.0, unref'ing a callback would cause the callback to
+Before Deno version 1.31.0, unref'ing a callback would cause the callback to
 lose its ability to wake up the Deno event loop even if it was ref'ed again
 afterwards. Example:
 
