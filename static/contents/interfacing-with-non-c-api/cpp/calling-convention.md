@@ -1,6 +1,6 @@
 # C++ calling convention
 
-When interfacing with a C++ library the thing you'll need to learn is the
+When interfacing with a C++ library the first thing you'll need to learn is the
 differences in calling convention. We'll take as an example a trivial C++ class
 and explore writing an FFI interface for it.
 
