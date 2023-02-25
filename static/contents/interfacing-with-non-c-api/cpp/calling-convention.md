@@ -203,8 +203,8 @@ As we saw above with constructors, C++ also has multiple destructors per class.
    This destructor does everything the complete object destructor does and
    deallocates the object.
 
-As with constructors, for a C++ class with no virtual base classes the two are
-equivalent. D1 and D2 destructors do not call `free()` on the memory of the
+As with constructors, for a C++ class with no virtual base classes the first two
+are equivalent. D1 and D2 destructors do not call `free()` on the memory of the
 object, meaning that calling a C++ destructor from Deno on a `Uint8Array` is
 safe: C++ will not try to deallocate the underlying `ArrayBuffer`'s memory. As
 with constructors, you should always be calling the complete object destructor
