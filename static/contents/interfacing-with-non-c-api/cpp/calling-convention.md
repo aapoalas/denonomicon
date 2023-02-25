@@ -86,7 +86,7 @@ instance of our `Example` class:
 const lib = Deno.dlopen(
   "./libexample.so",
     {
-        lib__Example__Constructor(): {
+        lib__Example__Constructor {
             name: "_ZN3lib7ExampleC1Ei",
             parameters: ["buffer"],
             result: "void",
