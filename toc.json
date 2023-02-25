@@ -44,5 +44,8 @@
       "cpp/inheritance": "C++ inheritance",
       "cpp/std-function": "C++ std::function"
     }
+  },
+  "future-work": {
+    "name": "Future of Deno FFI"
   }
 }
