@@ -142,7 +142,7 @@ proper JavaScript exception.
 
 - The API surface needs to be limited.
 
-32 bit integers are easy, but for example expecting V8 to optimally convert your
+32-bit integers are easy, but for example expecting V8 to optimally convert your
 JavaScript object into a C struct automatically is probably too much to ask.
 
 Even relatively simple things like strings are not yet supported by Fast API
@@ -178,10 +178,10 @@ As of writing this, these are the known supported types of Fast API.
 - Booleans
 - Arrays (passed as `Local<Array>`, so essentially only primitive values can be
   used)
-- 32 bit integers
-- 64 bit integers (JavaScript numbers, meaning limited to
+- 32-bit integers
+- 64-bit integers (JavaScript numbers, meaning limited to
   `Number.MAX_SAFE_INTEGER`)
-- 32 and 64 bit floating point numbers
+- 32 and 64-bit floating point numbers
 - `Uint8Array`, `Uint32Array`, `Int32Array`, `Float32Array`, `Float64Array`,
   `BigUint64Array`, and `BigInt64Array`
 - Catch-all `v8::Local<v8::Value>`: This can theoretically be used to pass any
@@ -192,5 +192,5 @@ As of writing this, these are the known supported types of Fast API.
 
 - Void
 - Booleans
-- 32 bit integers
-- 32 and 64 bit floating point numbers
+- 32-bit integers
+- 32 and 64-bit floating point numbers

@@ -1,9 +1,14 @@
 #include <functional>
 #include <stdio.h>
+#include <iostream>
 
 #include <functional>
 
 namespace example_lib {
+int print_num(int i, int j) { std::cout << i << j << '\n'; return 3; }
+struct PrintNum {
+  void operator()(int i) const { std::cout << i << '\n'; }
+};
 typedef void (*Callback)(void *userdata, void *userdata2);
 class PartiallyVirtualClass {
 public:
@@ -12,9 +17,10 @@ public:
 
   static void callDoDataMethod(PartiallyVirtualClass *instance);
   static void callDelete(PartiallyVirtualClass *instance);
-  static void callLambda(const std::function<void()> &lambda);
+  static void callLambda(const std::function<int(int, int)> &lambda);
 
-  std::function<void()> &createLambda(Callback callback, void *userdata,
+  std::function<int(int, int)> &createLambda(std::function<int(int, int)> *out,
+                                      Callback callback, void *userdata,
                                       void *userdata2);
   virtual void doData(int data);
   virtual void useData(int data);
@@ -22,7 +28,7 @@ public:
 
 private:
   int data_;
-  std::function<void()> callback_;
+  std::function<int(int, int)> callback_;
 };
 
 class Derived : PartiallyVirtualClass {
@@ -45,17 +51,20 @@ void PartiallyVirtualClass::callDelete(PartiallyVirtualClass *instance) {
   instance->~PartiallyVirtualClass();
 }
 
-std::function<void()> &PartiallyVirtualClass::createLambda(Callback callback,
-                                                           void *userdata,
-                                                           void *userdata2) {
-  callback_ = [callback, userdata, userdata2]() {
-    callback(userdata, userdata2);
-  };
+std::function<int(int, int)> &
+PartiallyVirtualClass::createLambda(std::function<int(int, int)> *out,
+                                    Callback callback, void *userdata,
+                                    void *userdata2) {
+  std::function<int(int, int)> cb = print_num;
+  *out = cb;
+  if (!callback_) {
+    callback_ = cb;
+  }
   return callback_;
 }
 
-void PartiallyVirtualClass::callLambda(const std::function<void()> &lambda) {
-  lambda();
+void PartiallyVirtualClass::callLambda(const std::function<int(int, int)> &lambda) {
+  printf("Lambda returned: %i\n", lambda(1234, 4567));
 }
 
 void PartiallyVirtualClass::useData(int data) {
@@ -69,7 +78,5 @@ void PartiallyVirtualClass::doData(int data) {
 Derived::~Derived() { this->useData(666); }
 
 void Derived::doData(int data) { printf("Derived class doData: %i\n", data); }
-void Derived::maybeData() {
-  printf("Derived class maybeData\n");
-}
+void Derived::maybeData() { printf("Derived class maybeData\n"); }
 } // namespace example_lib

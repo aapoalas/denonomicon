@@ -15,8 +15,8 @@
     "name": "Types",
     "children": {
       "boolean-values": "Boolean values",
-      "32-bit-integers": "32 bit and smaller integers",
-      "64-bit-integers": "64 bit and pointer integers",
+      "32-bit-integers": "32-bit and smaller integers",
+      "64-bit-integers": "64-bit integers",
       "floating-point-numbers": "Floating point numbers",
       "pointers": "Pointers",
       "functions": "Functions",

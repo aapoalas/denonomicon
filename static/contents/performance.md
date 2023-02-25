@@ -28,7 +28,7 @@ Since the generic binding function is by necessity generic, it needs to iterate
 over the parameters of the FFI call. This means that for each additional
 parameter, the slow call performance takes a little bit longer.
 
-An example would be that a slow call that takes one 64 bit integer parameter
+An example would be that a slow call that takes one 64-bit integer parameter
 takes around 150 nanoseconds per call when called using a BigInt parameter,
 which forces the slow call path to be utilised. A slow call that takes 26
 parameters takes around 650 nanoseconds. This means that a single parameter
@@ -77,7 +77,7 @@ these kind of simple signatures.
 | Return: bool, float, <32bit integer | 43-88 ns [3]          | 6 ns                  |
 | Return: 64-bit unsigned integer     | 66-75 ns [4]          | 8-13 ns [4]           |
 | Return: 64-bit signed integer       | 88-109 ns [4]         | 22-43 ns [4]          |
-| Return: pointer                     | 65 ns                 | 8 ns [4]              |
+| Return: pointer                     | 65 ns                 | 6 ns                  |
 
 [1] `XArray` is for any TypedArray other than `Uint8Array`.\
 [2] The range in slow call parameter performance for numbers and booleans is due
@@ -91,6 +91,4 @@ return type: If the integer can be safely represented as a JavaScript number, it
 will be returned as a number at a higher performance. Unsafe integers will be
 returned as BigInts at a measurable cost in performance. Additionally, an
 internal optimisation is used for unsigned integer returning that improves their
-performance compared to signed integers. Pointers are essentially always safe
-integers, meaning that they stay at the fast end of 64-bit unsigned integer
-performance range.
+performance compared to signed integers.

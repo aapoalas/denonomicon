@@ -1,30 +1,30 @@
-# 64 bit and pointer integers
+# 64-bit and pointer integers
 
-For the purposes of current FFI, 64 bit integers include all of the following:
+For the purposes of current FFI, 64-bit integers include all of the following:
 
 - `"u64"`
 - `"i64"`
 - `"usize"`
 - `"isize"`
 
-64 bit integers can be represented by either plain JS numbers or BigInts. FFI
-symbols will currently return 64 bit integers as plain numbers, or BigInts if
+64-bit integers can be represented by either plain JS numbers or BigInts. FFI
+symbols will currently return 64-bit integers as plain numbers, or BigInts if
 the value doesn't fit in a normal JavaScript number.
 
 ## Fast API support
 
-Fast API offers limited support for 64 bit integers as parameters. This support
+Fast API offers limited support for 64-bit integers as parameters. This support
 is conditional on the parameters being plain numbers, that is BigInts are not
-allowed. This means that the maximum number that can be used as a 64 bit integer
+allowed. This means that the maximum number that can be used as a 64-bit integer
 parameter in Fast API FFI calls is equal to `Number.MAX_SAFE_INTEGER`. If
 numbers beyond that need to be used, then using BigInts is the only option and
 the function call will fall back onto the slow path.
 
-For return values, Fast API does not currently support 64 bit integers at all.
-However, a workaround is in use in Deno that makes it possible to return 64 bit
+For return values, Fast API does not currently support 64-bit integers at all.
+However, a workaround is in use in Deno that makes it possible to return 64-bit
 integers from C calls using the Fast API. This workaround is to create and pass
 in an extra `Uint32Array` of length two to the Fast API call and use that as an
 out pointer for the return value.
 
-Thus, Fast API FFI calls support 64 bit integers as parameters in a limited
+Thus, Fast API FFI calls support 64-bit integers as parameters in a limited
 fashion (only up to max safe integer value) and fully as return values.

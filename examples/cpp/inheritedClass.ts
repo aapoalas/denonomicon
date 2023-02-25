@@ -52,15 +52,16 @@ const lib = Deno.dlopen(
     },
     example_lib__PartiallyVirtualClass__createLambda: {
       name:
-        "_ZN11example_lib21PartiallyVirtualClass12createLambdaEPFvPvS1_ES1_S1_",
-      parameters: ["buffer", "function", "pointer", "pointer"],
+        "_ZN11example_lib21PartiallyVirtualClass12createLambdaEPSt8functionIFiiiEEPFvPvS5_ES5_S5_",
+      parameters: ["buffer", "buffer", "function", "pointer"],
       result: "pointer",
     },
     example_lib__PartiallyVirtualClass__callLambda: {
       name:
-        "_ZN11example_lib21PartiallyVirtualClass10callLambdaERKSt8functionIFvvEE",
-      parameters: ["pointer"],
+        "_ZN11example_lib21PartiallyVirtualClass10callLambdaERKSt8functionIFiiiEE",
+      parameters: ["buffer"],
       result: "void",
+      callback: true,
     },
     ptr_PartiallyVirtualClass__VTABLE: {
       name: "_ZTVN11example_lib21PartiallyVirtualClassE",
@@ -84,12 +85,12 @@ const lib = Deno.dlopen(
     },
     ptr_createLambda: {
       name:
-        "_ZN11example_lib21PartiallyVirtualClass12createLambdaEPFvPvS1_ES1_S1_",
+        "_ZN11example_lib21PartiallyVirtualClass12createLambdaEPSt8functionIFiiiEEPFvPvS5_ES5_S5_",
       type: "pointer",
     },
     ptr_callLambda: {
       name:
-        "_ZN11example_lib21PartiallyVirtualClass10callLambdaERKSt8functionIFvvEE",
+        "_ZN11example_lib21PartiallyVirtualClass10callLambdaERKSt8functionIFiiiEE",
       type: "pointer",
     },
     ptr_Constructor: {
@@ -144,18 +145,17 @@ const lib = Deno.dlopen(
       name: "_ZTVN11example_lib7DerivedE",
       type: "pointer",
     },
-    ptr_ZN11example_lib21PartiallyVirtualClass10callLambdaERKSt8functionIFvvEE:
-      {
-        name:
-          "_ZN11example_lib21PartiallyVirtualClass10callLambdaERKSt8functionIFvvEE",
-        type: "pointer",
-      },
     ptr_pure_virtual: {
       name: "__cxa_pure_virtual",
       type: "pointer",
     },
     cxa_pure_virtual: {
       name: "__cxa_pure_virtual",
+      parameters: [],
+      result: "void",
+    },
+    ptr_example_lib_print_num: {
+      name: "_ZN11example_lib9print_numEii",
       parameters: [],
       result: "void",
     },
@@ -263,33 +263,69 @@ const LAMBDA_CALLBACK = new Deno.UnsafeCallback({
 }, (pointer, pointer2) => {
   console.log("Lambda callback", pointer, pointer2);
 });
-const lambda = lib.symbols.example_lib__PartiallyVirtualClass__createLambda(
-  first,
-  LAMBDA_CALLBACK.pointer,
-  12345,
-  34654754,
-);
+const lambdaBuffer = new Uint8Array(32);
+const lambdaPointer = lib.symbols
+  .example_lib__PartiallyVirtualClass__createLambda(
+    first,
+    lambdaBuffer,
+    LAMBDA_CALLBACK.pointer,
+    12345,
+  );
 const lambdaBufferBigInt = new BigUint64Array(first.buffer).subarray(2);
-// console.log(lambdaBufferBigInt);
-// console.log(
-//   "Lambda C function:",
-//   LAMBDA_CALLBACK.pointer,
-// );
 
-const lambdaBufferPointers = Array.of(
-  lambdaBufferBigInt[0],
-  lambdaBufferBigInt[2],
-  lambdaBufferBigInt[3],
-).map(
-  (x) => Number(x),
-);
-const next = lambdaBufferPointers.map((ptr) =>
-  new BigUint64Array(Deno.UnsafePointerView.getArrayBuffer(ptr - 16, 56))
-);
-//console.log(next);
 const customLambda = new BigUint64Array(4);
 customLambda[0] = BigInt(LAMBDA_CALLBACK.pointer);
-customLambda[1] = 26345745678n;
 //console.log(getFoo(lambda))
 //lib.symbols.example_lib__PartiallyVirtualClass__callLambda(Deno.UnsafePointer.of(customLambda));
-lib.symbols.example_lib__PartiallyVirtualClass__callLambda(lambda);
+lib.symbols.example_lib__PartiallyVirtualClass__callLambda(lambdaBuffer);
+
+const LAMBDA_DATA_TABLE = new BigUint64Array(4);
+const LAMBDA_TABLE_A = new BigUint64Array(4);
+const LAMBDA_TABLE_B = new BigUint64Array(4);
+
+const aTableCbs = Array.from({ length: 4 }, (x, i) => {
+  const cb = new Deno.UnsafeCallback({
+    parameters: ["u64", "u64", "u64", "u64"],
+    result: "void",
+  }, (p0, p1, p2, p3) => {
+    console.log("A table, index", i, "parameters", p0, p1, p2, p3);
+  });
+  LAMBDA_TABLE_A[i] = BigInt(cb.pointer);
+  return cb;
+});
+
+customLambda[0] = BigInt(Deno.UnsafePointer.of(LAMBDA_DATA_TABLE));
+customLambda[2] = BigInt(Deno.UnsafePointer.of(LAMBDA_TABLE_A));
+const bTableCbs = Array.from({ length: 4 }, (x, i) => {
+  const cb = new Deno.UnsafeCallback({
+    parameters: [
+      "pointer",
+      "pointer",
+      "pointer",
+      "pointer",
+      "pointer",
+      "pointer",
+    ],
+    result: "u32",
+  }, (p0, ...params) => {
+    console.log("operator() being called");
+    console.log(params);
+    console.log(
+      params.map((x) =>
+        new Uint8Array(Deno.UnsafePointerView.getArrayBuffer(x, 8))
+      ),
+    );
+    return 12345;
+  });
+  LAMBDA_TABLE_B[i] = BigInt(cb.pointer);
+  return cb;
+});
+
+LAMBDA_DATA_TABLE[0] = 33n;
+LAMBDA_DATA_TABLE[1] = 33n;
+LAMBDA_DATA_TABLE[2] = BigInt(LAMBDA_CALLBACK.pointer);
+LAMBDA_DATA_TABLE[3] = 66567n;
+
+customLambda[3] = LAMBDA_TABLE_B[0];
+lib.symbols.example_lib__PartiallyVirtualClass__callLambda(customLambda);
+lib.symbols.example_lib__PartiallyVirtualClass__callLambda(customLambda);

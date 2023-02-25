@@ -32,8 +32,8 @@ exception is the above-mentioned return value type, where a `"pointer"` or
 ## Struct layout and packing
 
 C structs are by default aligned in such a way that each field in the struct
-sits on its natural alignment. This means that for example 64 bit integer fields
-always sit on a 64 bit (8 byte) aligned memory slot, 32 bit integers on 32 bit
+sits on its natural alignment. This means that for example 64-bit integer fields
+always sit on a 64-bit (8 byte) aligned memory slot, 32-bit integers on 32-bit
 (4 byte) aligned slots etc.
 
 Deno FFI's structs expect the same to be true for field descriptions. As an
@@ -43,7 +43,7 @@ example, the struct
 { "struct": ["u8", "u32"] }
 ```
 
-will have a size of 64 bits (8 bytes) and an alignment of 4 bytes: The first
+will have a size of 64-bits (8 bytes) and an alignment of 4 bytes: The first
 `u8` field will sit on the first byte of the struct, and the second `u32` field
 will sit on the 4th byte of the struct, thus aligning itself to its natural 4
 byte alignment.
@@ -77,7 +77,7 @@ const firstByte = uint8Array[0];
 uint8Array[1] = 14; // write second byte
 ```
 
-This becomes very unwieldy very quickly when eg. 32 bit or 64 bit numbers are
+This becomes very unwieldy very quickly when eg. 32-bit or 64-bit numbers are
 needed. In these cases using a `DataView` can make the work much simpler. Refer
 to the
 [DataView documentation on MDN](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/DataView)

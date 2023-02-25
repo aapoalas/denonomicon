@@ -16,7 +16,7 @@ JavaScript nor cause any allocations in the isolate.
 
 If an FFI symbol may cause a callback to be called, that symbol must be given
 the `"callback": true` option as part of its declaration. This option will
-disable Fast API optimisation from the symbol but allows the callback to happen.
+disable Fast API optimisation for the symbol but allows the callback to happen.
 If this option is not enabled and a Fast API call tries to call back into
 JavaScript, V8 will immediately terminate the program.
 
@@ -24,7 +24,7 @@ JavaScript, V8 will immediately terminate the program.
 
 ### Result callback
 
-An FFI method takes two 64 bit number parameters and a callback which is used to
+An FFI method takes two 64-bit number parameters and a callback which is used to
 signal success and value, or failure.
 
 ```ts
@@ -44,6 +44,7 @@ const callback = new Deno.UnsafeCallback(
   },
 );
 
+// `calculate_u64_sum` must be marked with `"callback": true` in its symbol definition.
 lib.symbols.calculate_u64_sum(136346n, 3546n, callback.pointer);
 ```
 
@@ -66,7 +67,7 @@ const callback = new Deno.UnsafeCallback(
       console.error("Unknown ID:", id);
       return;
     }
-    // Consider using `Promise.resolve().then(() => callback(value))` or similar here to
+    // Consider using `queueMicrotask(() => callback(value))` or similar here to
     // decouple the native callback from the potentially slow JS callback handling.
     callback(value);
   },
@@ -74,6 +75,8 @@ const callback = new Deno.UnsafeCallback(
 
 // Some class that contains a `pointer` member and handles the JS side of "item"
 const item = new ItemClass();
+// `register_item` does not need to be marked with `"callback": true` as it
+// never calls the callback function.
 const newId = lib.symbols.register_item(item.pointer, callback.pointer);
 // Bind the generic callback to our specific ItemClass instance
 ID_MAP.set(newId, (value: number) => item.updateValue(value));
@@ -82,6 +85,7 @@ ID_MAP.set(newId, (value: number) => item.updateValue(value));
 setInterval(() => {
   // This will trigger any `register_item` provided callbacks,
   // meaning that `item.updateValue(value)` calls will happen.
+  // `run_item_updates` must thus be marked with `"callback": true` in its symbol definition.
   lib.symbols.run_item_updates();
 }, 1000);
 ```

@@ -100,11 +100,11 @@ the engine level, will lead to data races and is all in all a great route to
 undefined behaviour. Do not do it.
 
 Another point of interest is 8 and 16 bit integers. JavaScript does not have
-integers in the strict sense, but the V8 engine does implement an internal 32
-bit unsigned and signed integer class. Any 8 or 16 bit integers will thus be
-internally represented as 32 bit integers by V8. FFI does not implement any
+integers in the strict sense, but the V8 engine does implement an internal
+32-bit unsigned and signed integer class. Any 8 or 16 bit integers will thus be
+internally represented as 32-bit integers by V8. FFI does not implement any
 boundary checks for these integer types and will instead just directly truncate
-the V8's internal 32 bit integer to the 8 or 16 bit form. Thus, passing an
+the V8's internal 32-bit integer to the 8 or 16 bit form. Thus, passing an
 overflowing integer into an 8 or 16 bit integer parameter will not throw a type
 error but will instead be silently converted.
 

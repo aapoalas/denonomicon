@@ -3,7 +3,7 @@
 FFI supports pointers in various flavours:
 
 1. Buffers
-2. Pointer integers
+2. Pointer objects
 3. Null pointers
 
 Passing a pointer into an FFI call does nothing to the memory that the pointer
@@ -20,26 +20,25 @@ parameter, completely irrespective of the expected size of the memory the
 pointer should refer to.
 
 Any FFI symbol returning a `"pointer"`, `"buffer"` or `"function"` will return
-either a number or a BigInt (essentially always a number), depending on if the
-pointer can be safely represented as a number. Note that there is no difference
-between the three as return values, they can only be though of being different
-in terms of documentation at best.
+either a null or a pointer object, depending on if the pointer is a null pointer
+or not. Note that there is no difference between the three as return values,
+they can only be though of being different in terms of documentation at best.
 
 ### Buffers
 
 Any `ArrayBuffer` or `TypedArray` (`Uint8Array` etc.) created in JavaScript can
 be passed as a `"buffer"` type parameter to an FFI symbol. It is also possible
-to get the pointer integer value from a buffer using the
-`Deno.UnsafePointer.of()` static method (requires FFI permissions) for passing
-as a `"pointer"` type parameter. Similarly, it is possible to do the reverse
-using `Deno.UnsafePointerView.getArrayBuffer(pointer, 1)` (setting length as 0
-would return a null pointer).
+to get a pointer object from a buffer using the `Deno.UnsafePointer.of()` static
+method (requires FFI permissions) for passing as a `"pointer"` type parameter.
+Similarly, it is possible to do the reverse using
+`Deno.UnsafePointerView.getArrayBuffer(pointer, 1)` (setting length as 0 would
+return a null pointer).
 
-Passing the buffer directly or passing the pointer integer value of the buffer
-is 100% equal in function from the native library point of view, the only
-difference is in what parameter type to declare.
+Passing the buffer directly or passing the pointer object of the buffer is 100%
+equal in function from the native library point of view, the only difference is
+in what parameter type to declare.
 
-Note that it is much quicker to get the pointer integer value of a buffer using
+Note that it is much quicker to get the pointer object of a buffer using
 `Deno.UnsafePointer.of()` than creating an ArrayBuffer from a pointer using
 `Deno.UnsafePointerView.getArrayBuffer()`. As such, if you have a symbol that
 will be called with both external pointers and owned buffers, it may be better
@@ -51,38 +50,76 @@ undefined behaviour and can not be recommended in any circumstances. Note though
 that a zero-length buffer may be useful to signify the end pointer of an
 iterator.
 
-### Pointer integers
+### Pointer objects
 
-Any `BigInt` or `number` value can be passed as a `"pointer"` type parameter to
-an FFI symbol. Usually these values are expected to either be returned from FFI
-symbol calls that return pointers themselves, or from the
+Starting with Deno 1.31.0, all non-null pointers are represented using an opaque
+objects, here called "pointer object" but in V8 engine terms these are
+`External` objects. These objects look like plain JavaScript objects with a few
+exceptions:
+
+1. They have a null prototype, ie. they have no prototype methods such as
+   `hasOwnProperty`.
+2. They are not extensibe, ie. their prototype cannot be changed and they cannot
+   be assigned to.
+
+Usually pointer objects are expected to be received from FFI symbol calls that
+return pointers themselves, or created from buffers using the
 `Deno.UnsafePointer.of()` call.
 
-However, there is nothing stopping anyone from calling a foreign library with
-made-up pointer values. What happens when that is done is totally undefined and
-depends entirely on where the pointer happens to point into. The program may
-crash with a segfault, or data may become corrupted and anything and everything
-may become possible.
+However, sometimes there is a need for FFI libraries to create a pointer from a
+pointer value that they receive eg. inside a buffer. This means that a 64-bit
+integer must be read from a buffer and then a pointer created from that number.
+This can be done using the `Deno.UnsafePointer.create()` API. However, note that
+this is **really** dangerous! There is nothing stopping anyone from creating
+pointers with made-up numbers and calling a foreign library with those made-up
+pointers.
+
+What happens when that is done is totally undefined and depends entirely on
+where the pointer happens to point to. The program may crash with a segfault, or
+data may become corrupted and anything and everything may become possible.
 
 ### Null pointers
 
-Null pointers can be passed in as parameters either using `null`, `0` or `0n`.
-The first will always work and will always cause a depot, as the V8 Fast API
-does not support `null`. The latter two are dependent on the system architecture
-(numeric value of null pointer is not necessarily zero) but should generally
-work for all modern computers that Deno supports.
+Starting with Deno 1.31.0, all null pointers (though not null buffers) are
+represented using JavaScripts native `null`. The V8 Fast API also has support
+for `null` to stand for null pointers for the `"pointer"` parameter type but not
+for `"buffer"`.
+
+For V8 Fast API support with `"buffer"` parameters it is possible to create a
+null pointer buffer using `new Uint8Array()` as V8 always creates a null pointer
+backed buffer when the buffer's length is 0. However, it is best to create this
+buffer once and reuse it as V8 currently has a bug where creating an empty
+buffer "inline" and calling a Fast API optimised function with it will result in
+the Fast API call seeing a non-null pointer value in the buffer.
+
+Example:
+
+```ts
+// Good way to create a null buffer ahead of time:
+const NULL = new Uint8Array();
+
+// Bad way create a null buffer inline:
+lib.symbols.call_with_buffer(new Uint8Array());
+```
+
+The `call_with_buffer()` call here is susceptible to the
+[V8 bug](https://bugs.chromium.org/p/v8/issues/detail?id=13489).
 
 ## Fast API support
 
-Deno FFI offers limited support for 64 bit numbers as parameters and full
-support as return values (see [64 bit integers](./64-bit-integers) for details).
-However, Deno versions 1.24.2 and 1.24.3 prefer `Uint8Array` buffers for the
-Fast API path. In versions after 1.24.3 this will change with the introduction
-of a new `"buffer"` FFI type which will split the pointer support to pointer
-numbers and pointer buffers.
+Starting with Deno 1.31.0, Deno offers full support for pointers as both
+parameters and return values using `null` for null pointer and pointer objects
+for non-null pointers.
 
-This change is partially caused by V8's Fast API not supporting type overloads
-between 64 bit integers and TypedArrays. Because of this, Deno must choose what
+Previously Deno FFI offered limited support for 64-bit pointer numbers as
+parameters and full support as return values (see
+[64-bit integers](./64-bit-integers) for details). Even earlier, Deno versions
+1.24.2 and 1.24.3 preferred `Uint8Array` buffers for the Fast API path. In
+versions after 1.24.3 this changed with the introduction of the `"buffer"` FFI
+type which split the pointer support to pointer numbers and pointer buffers.
+
+That change was partially caused by V8's Fast API not supporting type overloads
+between 64-bit integers and TypedArrays. Because of this, Deno must choose what
 type it prefers on the fast path and what it knocks down onto the slow path. The
 choice is then obvious to have different parameter types for the two cases.
 
@@ -98,13 +135,13 @@ pointer values existed.
 In 1.24.2 pointers became represented by numbers or BigInts depending on the
 numerical value of the pointer. This made it possible to support plain number
 pointer integers on the fast path, but the choice was made to prefer
-`Uint8Array`s. Fast path support for returning 64 bit numbers, including
+`Uint8Array`s. Fast path support for returning 64-bit numbers, including
 pointers, was also added.
 
 Passing pointer parameters as `Uint8Array`s is the optimal call strategy.
 Returning pointers on the fast path works.
 
-### 1.25.0 onwards
+### 1.25.0
 
 Pointer parameter types split further to `"buffer"` and `"pointer"`.
 
@@ -112,6 +149,16 @@ Passing `"buffer"` type pointer parameters as `Uint8Array`s, and `"pointer"`
 type pointer parameters as numbers is the optimal call strategy. Returning
 pointers, whether as type `"buffer"` or `"pointer"`, still always return as
 numbers or BigInts depending on the numerical value of the pointer.
+
+### 1.31.0
+
+Representation of pointers changed from pointer numbers into pointer objects and
+null. The `"pointer"` type parameters can now only be pointer objects or null,
+both of which are supported by the V8 Fast API and are thus optimal in call
+strategy.
+
+Returning a `"pointer"`, `"buffer"`, or `"function"` always returns either a
+pointer object or null.
 
 ## Concurrent access and data races
 
@@ -167,9 +214,9 @@ export const callWithStaticBuffer = (pointer: Deno.PointerValue) => {
 };
 ```
 
-Looks simple enough: A buffer containing two 32 bit numbers is created and a
-pointer number referencing said buffer is then created from that. The
-`callWithStaticBuffer` function then uses the pointer number when calling an FFI
+Looks simple enough: A buffer containing two 32-bit numbers is created and a
+pointer object referencing said buffer is then created from that. The
+`callWithStaticBuffer` function then uses the pointer object when calling an FFI
 symbol. There seems to be no direct issue with any of this, and that is not true
 at all.
 
