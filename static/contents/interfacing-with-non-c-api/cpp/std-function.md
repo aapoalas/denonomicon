@@ -26,8 +26,8 @@ The `callback_data_` will hold the bound function of a lambda, that is the
 function that will be called with both the outside and bound parameters of the
 lambda.
 
-If a lambda binds over a single variable that is at most a pointer in size, it
-will be stored in the `userdata_`. Otherwise, the variables get stored in the
+If a lambda binds a single variable that is at most a pointer in size, it will
+be stored in the `userdata_`. Otherwise, the variables get stored in the
 `callback_data_` struct.
 
 The two functions in the struct are the operation callback and the call

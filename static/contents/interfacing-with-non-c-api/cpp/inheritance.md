@@ -10,18 +10,17 @@ do inheritance through an FFI interface layer, at the very least with GCC
 compiled C++. With other compilers your mileage may vary, though the basic idea
 is definitely the same.
 
-At the core of C++ inheritance is the virtual table or vtable for short. A class
-that inherits from a virtual class will have a vtable pointer at the beginning
-of its memory layout. A call to a virtual method will then indirectly find the
-instance's implementation of said method through the vtable pointer and call
-that instead of doing a direct call to a known function in the library.
+C++ has two flavours of inheritance: Normal or concrete inheritance, and virtual
+inheritance. On top of this, inheritance can be done in the singular or plural.
+Here I'll be talking of normal inheritance in the singular. If you need to do
+multiple inheritance or virtual inheritance then you're on your own. Good luck.
 
-C++ has two flavours of inheritance: Single inheritance and multiple
-inheritance.
-
-Single inheritance concerns classes that inherit from a single base class,
-whereas multiple inheritance of course inherits from multiple classes. If you
-want to implement multiple inheritance through an FFI layer, I wish you luck.
+Let's proceed with normal inheritance. At the core of C++ inheritance is the
+virtual table or vtable for short. A class that inherits from a class will have
+a vtable pointer at the beginning of its memory layout. A call to a virtual
+method will then indirectly find the instance's implementation of said method
+through the vtable pointer and call that instead of doing a direct call to a
+known function in the library.
 
 ## Single inheritance
 
@@ -47,7 +46,7 @@ public:
 };
 ```
 
-We have here fourt virtual methods, one of which are pure virtual and one is the
+We have here four virtual methods, one of which is pure virtual and one is the
 destructor. As we already learned in the [C++ calling convention], C++ has three
 destructors of which 1 is often a duplicate. Thus, our actual number of virtual
 functions in this example is 5:
@@ -57,16 +56,17 @@ functions in this example is 5:
 
 Additionally, our virtual table will need to hold a pointer to the object's
 [type info](https://cplusplus.com/reference/typeinfo/type_info/), plus one extra
-pointer sized slot at the beginning which the author is not sure what it is for
-(it may be a slot for the third destructor, or may have something to do with
-multiple inheritance).
+pointer sized slot which holds the offset from this virtual table pointer (when
+in an instance) to the parent class. That information is relevant in either
+virtual or multiple inheritance but for our singular normal inheritance it is
+always 0.
 
 The final vtable looks like this:
 
 ```cpp
 struct PartiallyVirtualClass_VTABLE {
-    void* unknown_, // This is usually 0
-    void* type_info_, // If library is built with `-fno-rtti` this is also 0
+    void* class_offset_, // This is 0 for our case
+    void* type_info_,    // If library is built with `-fno-rtti` this is also 0
     void* destructor_D1, // complete / base object destructor: For base class this is often 0 as well
     void* destructor_D0, // deleting destructor: for base class this is often 0 as well
     void* doData_method,
@@ -143,11 +143,11 @@ build ourselves a vtable of the same size as our base class:
 const JS_DERIVED_VTABLE = new BigUint64Array(7);
 ```
 
-The first item in the array we leave alone, as we're not sure what to put in it.
-The second item is the type info pointer: If you're sure that the library
-doesn't use type info then you can safely leave it as 0. Otherwise, you need to
-implement a typeinfo struct as well, which includes at least one C string
-pointer and probably some other data. Good luck.
+The first item in the array we leave alone as 0. The second item is the type
+info pointer: If you're sure that the library doesn't use type info then you can
+safely leave it as 0. Otherwise, you need to implement a typeinfo struct as
+well, which includes at least one C string pointer and probably some other data.
+Good luck.
 
 The third and fourth items are more interesting: We need to implement our own
 destructors. At their core, these should just call out to the base class' base
