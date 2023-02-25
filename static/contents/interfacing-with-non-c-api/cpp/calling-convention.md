@@ -229,7 +229,7 @@ memory leak.
 
 So, a virtual destructor is needed. With a virtual destructor, the call to the
 destructor is done through the `instance`'s vtable, and the vtable will contain
-pointers to both of the classes' destructors. The deleting object destructor is
+pointers to all of the classes' destructors. The deleting object destructor is
 called on `delete instance` whereas the complete object destructor is called on
 `instance->~Base()`. The base object destructor is only called from derived
 classes' destructor.
@@ -246,8 +246,8 @@ void deletingObjectDestructor(Base* instance) {
 
 As the name implies, the deleting object destructor will actually call `free()`
 on the memory associated with `instance`. Thus, building an FFI interface to
-`deletingObjectDestructor` here and calling it with a `Uint8Array` is not safe and
-will almost certainly lead to the program crashing.
+`deletingObjectDestructor` here and calling it with a `Uint8Array` is not safe
+and will almost certainly lead to the program crashing.
 
 [System V ABI]: https://wiki.osdev.org/System_V_ABI
 [example.cpp]: https://github.com/aapoalas/denonomicon/tree/main/examples/cpp/example.cpp
