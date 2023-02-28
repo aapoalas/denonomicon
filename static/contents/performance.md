@@ -9,13 +9,14 @@ nanoseconds. In the V8 Fast API call path the calls are tailored for each FFI
 symbol individually, meaning that call performance improves to a baseline of
 less than 10 nanoseconds per call.
 
-The V8 Fast API call path is not available unconditionally, and depends on both
-the declared parameter types of the symbol in question and the parameters passed
-to call said symbol. That being said, all of Deno FFI's currently supported call
-parameters and return types are either directly supported by the V8 Fast API, or
-Deno internally adapts the calls so that Fast API support can be achieved.
+The V8 Fast API call path has restrictions, is not available unconditionally,
+and depends on both the declared parameter types of the symbol in question and
+the parameters passed to call said symbol. That being said, all of Deno FFI's
+currently supported call parameters and return types with the exception of
+structs (`{ struct: [...] }`) are either directly supported by the V8 Fast API,
+or Deno internally adapts the calls so that Fast API support can be achieved.
 
-Thus, all FFI symbol calls that are not marked nonblocking or with the
+Thus, most FFI symbol calls that are not marked nonblocking or with the
 `callback` flag can use the V8 Fast API but whether or not that is done depends
 on two things:
 
@@ -56,8 +57,8 @@ the generic binding function path. Additionally, the spawning of a new thread
 takes some time and as a result all nonblocking calls can be expected to take at
 least 150 nanoseconds. As a result, one should be careful of not needlessly
 using nonblocking calls to "improve performance" with multithreading: If the
-work your calls do is less than 150 nanoseconds you will only worsen performance
-by using nonblocking calls.
+work your calls do is less than 150 nanoseconds you will only make the direct
+call performance worse by using nonblocking calls.
 
 ## Example performance results:
 
