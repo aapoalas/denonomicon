@@ -25,7 +25,7 @@ const lib = Deno.dlopen(
       parameters: ["u8"],
       result: "pointer",
     },
-  } as const,
+  },
 );
 
 // Use symbols
@@ -43,9 +43,3 @@ declarations and their validity are left entirely up to the user.
 Calling the symbols returned by `Deno.dlopen` does not require the `--allow-ffi`
 flag. As such, it is possible to revoke FFI permissions after opening a library
 and still keep using the symbols.
-
-Note that the symbols declaration is set type-wise readonly using `as const`.
-The reason for this is that changing the symbol declarations may cause undefined
-behaviour and thus the typings for `Deno.dlopen` expect readonly declarations.
-If non-readonly declarations are passed in, the type inference for the symbols
-will not work properly.
