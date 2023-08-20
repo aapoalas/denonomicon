@@ -132,8 +132,8 @@ Ways to avoid exploitation by way of FFI:
 3. Do not run untrusted code in your Deno program with `--allow-ffi`
    permissions. If you have to run untrusted code then do it inside a Worker
    that has all permissions turned off.
-4. When writing a Deno FFI using library, never expose pointer objects outside
-   of the library if possible. This means that pointers should always be held in
+4. When writing a library that uses FFI, never expose pointer objects outside of
+   the library if possible. This means that pointers should always be held in
    `#private` properties in classes and no methods should give ways to copy the
    pointers out. If sharing a pointer from one class to another is required then
    [static initialisation blocks](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Classes/Static_initialization_blocks#access_to_private_properties)
