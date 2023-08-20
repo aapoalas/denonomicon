@@ -15,7 +15,7 @@ binary you downloaded off the Internet: The FFI API gives all the code you run
 inside Deno the possibility to do anything and everything that a native binary
 could do. In this sense, `--allow-ffi` is very much like `--allow-all`.
 
-Using FFI as an attack tool is still not quite as simple as using Deno's own
+Using FFI as an attack vector is still not quite as simple as using Deno's own
 APIs would be when `--allow-all` is passed: To make meaningful HTTP requests an
 exploit code would need to know which OS you're running, which DLL or dynamic
 library and from which directory it should load to gain access to a usable HTTP
