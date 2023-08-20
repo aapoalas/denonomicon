@@ -1,0 +1,166 @@
+/* Copyright 2022-2023 the Deno authors. All rights reserved. MIT license. */
+
+/* Manual */
+
+ol.nested {
+	counter-reset: item;
+}
+ol.nested li {
+	display: block;
+}
+ol.nested li a:before {
+	font-feature-settings: "kern" 1, "tnum" 1;
+	-webkit-font-feature-settings: "kern" 1, "tnum" 1;
+	-ms-font-feature-settings: "kern" 1, "tnum" 1;
+	-moz-font-feature-settings: "kern" 1, "tnum" 1;
+	content: counters(item, ".") ". ";
+	counter-increment: item;
+}
+
+details > summary {
+	list-style: none;
+}
+details > summary::-webkit-details-marker {
+	display: none;
+}
+
+details[open].rotate-svg svg {
+	transform: rotate(90deg);
+}
+
+/* Add Module */
+
+#modulename:valid ~ span {
+	display: none;
+}
+
+#subdirectory:invalid + span {
+	display: block;
+}
+
+/* Module */
+
+#hiddenItemsToggle:not(:checked) ~ table #hiddenItemsButton span:first-child {
+	display: none;
+}
+#hiddenItemsToggle:checked ~ table #hiddenItemsButton span:last-child {
+	display: none;
+}
+
+#hiddenItemsToggle:not(:checked) ~ table tr[name="hidden"] {
+	display: none;
+}
+
+#hiddenItemsToggle:checked ~ table #hiddenItemsTr {
+	border-bottom-width: 1px;
+}
+
+span:target {
+	background-color: #fffbdd;
+}
+
+span[data-highlight] {
+	background-color: #fffbdd;
+}
+
+/* 404 Page */
+
+@keyframes move {
+	from {
+		left: -200px;
+	}
+	to {
+		left: 100%;
+	}
+}
+
+/* Benchmark */
+
+#normalizedToggle:not(:checked) + label > span:first-of-type {
+	background-color: rgb(229 231 235);
+}
+#normalizedToggle:checked + label > span:first-of-type > span {
+	transform: translateX(1.25rem);
+}
+
+#normalizedToggle:checked ~ div:first-of-type {
+	display: none;
+}
+#normalizedToggle:not(:checked) ~ div:last-of-type {
+	display: none;
+}
+
+/* removes focus outlines on mouse clicks */
+*:focus:not(:focus-visible),
+*::before:focus:not(:focus-visible),
+*::after:focus:not(:focus-visible) {
+	outline: none;
+}
+
+/* https://github.com/denoland/dotland/issues/1163 */
+.language-toml > code > .token-line > .table {
+	display: inline;
+}
+
+span.token.plain:empty:before {
+	content: "\200b";
+}
+
+.prism-code {
+	border-radius: .25rem;
+	tab-size: 2;
+	-moz-tab-size: 2;
+}
+.highlight-line {
+	background-color: #fffbdd;
+}
+
+ul.tree,
+ul.tree ul {
+	list-style: none;
+	margin: 0;
+	padding: 0;
+}
+
+ul.tree ul {
+	margin-left: 12px;
+}
+
+ul.tree li {
+	margin: 0;
+	padding: 0 8px;
+	line-height: 20px;
+	border-left: 1px solid rgb(100, 100, 100);
+}
+
+ul.tree li:last-child {
+	border-left: none;
+}
+
+ul.tree li:before {
+	position: relative;
+	top: -4px;
+	height: 12px;
+	width: 12px;
+	color: white;
+	border-bottom: 1px solid rgb(100, 100, 100);
+	content: "";
+	display: inline-block;
+	left: -4px;
+}
+
+ul.tree li:last-child:before {
+	border-left: 1px solid rgb(100, 100, 100);
+}
+
+.markdown-body img {
+    display: inline;
+}
+
+.markdown-body ol {
+	list-style: decimal;
+}
+
+.markdown-body ul {
+    list-style: disc;
+}

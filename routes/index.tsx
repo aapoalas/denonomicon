@@ -74,9 +74,9 @@ export default function Denonomicon({ url, data }: PageProps<Data>) {
           {pageTitle === "" ? "Denonomicon" : `${pageTitle} | Denonomicon`}
         </title>
         <link rel="canonical" href={`${path}`} />
-        <link rel="stylesheet" href="https://deno.land/fonts/inter/inter.css" />
-        <link rel="stylesheet" href="https://deno.land/app.css" />
-        <link rel="stylesheet" href="https://deno.land/gfm.css" />
+        <link rel="stylesheet" href="/inter.css" />
+        <link rel="stylesheet" href="/app.css" />
+        <link rel="stylesheet" href="/gfm.css" />
       </Head>
 
       <div>
