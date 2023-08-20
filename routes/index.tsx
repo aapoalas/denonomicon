@@ -158,16 +158,6 @@ export default function Denonomicon({ url, data }: PageProps<Data>) {
           </main>
         </div>
       </div>
-
-      <script
-        dangerouslySetInnerHTML={{
-          __html: `
-        (function() {
-          document.querySelectorAll(".toc-active").forEach(el=>{el.scrollIntoView({block:"center"});});
-        })();
-      `,
-        }}
-      />
     </>
   );
 }
