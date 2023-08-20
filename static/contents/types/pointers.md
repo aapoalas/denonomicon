@@ -1,10 +1,16 @@
 # Pointers
 
-FFI supports pointers in various flavours:
+FFI supports pointers in three flavours:
 
 1. Buffers
 2. Pointer objects
 3. Null pointers
+
+The reason for the two-way split between buffers and pointer objects is based on
+[V8's Fast API's](../fast-api) limitations. Null pointers are mentioned here
+separately since system level languages often consider null pointers to be a
+special case that is assignable to pointer-like types but isn't itself a valid
+pointer.
 
 Passing a pointer into an FFI call does nothing to the memory that the pointer
 points to, at least directly, nor does it keep the memory from being garbage
@@ -19,36 +25,50 @@ the call or not. eg. It is possible to pass a buffer of size 0 as any pointer
 parameter, completely irrespective of the expected size of the memory the
 pointer should refer to.
 
-Any FFI symbol returning a `"pointer"`, `"buffer"` or `"function"` will return
-either a null or a pointer object, depending on if the pointer is a null pointer
-or not. Note that there is no difference between the three as return values,
-they can only be though of being different in terms of documentation at best.
+When used as return values of FFI symbols (or parameters for
+`Deno.UnsafeCallback`) the three pointer types `"pointer"`, `"buffer"`, and
+`"function"` are entirely equivalent: They can only be thought of being
+different in terms of documentation at best. Any FFI symbol returning one of
+these will return either `null` or a pointer object, depending on if the pointer
+is a null pointer or not. Likewise, a `Deno.UnsafeCallback` with pointer type
+parameters will always call the JavaScript callback with either `null` or a
+pointer object.
 
 ### Buffers
 
+A `"buffer"` type parameter can be thought of as being "JavaScript (V8 engine)
+owned memory". If your dynamic library's API requires the caller to allocate
+memory and pass a pointer to said memory into the dynamic library then you
+likely want to use `"buffer"` as the parameter type for that pointer. One common
+use case for `"buffer"` is to pass strings from Deno to dynamic libraries.
+
 Any `ArrayBuffer` or `TypedArray` (`Uint8Array` etc.) created in JavaScript can
-be passed as a `"buffer"` type parameter to an FFI symbol. It is also possible
-to get a pointer object from a buffer using the `Deno.UnsafePointer.of()` static
-method (requires FFI permissions) for passing as a `"pointer"` type parameter.
-Similarly, it is possible to do the reverse using
-`Deno.UnsafePointerView.getArrayBuffer(pointer, 1)` (setting length as 0 would
-return a null pointer backed buffer thanks to a V8 bug).
+be passed as a `"buffer"` type parameter to an FFI symbol. It is preferable to
+use `Uint8Array` as your API type of choice. Due to limitations of V8's Fast API
+Deno FFI needs to choose one buffer type to optimise over all others and
+`Uint8Array` is the one we've chosen.
+
+It is also possible to get a pointer object from a buffer using the
+`Deno.UnsafePointer.of()` static method (requires FFI permissions) for passing
+it as a `"pointer"` type parameter. Similarly, it is possible to do the reverse
+using `Deno.UnsafePointerView.getArrayBuffer(pointer, length)` (Warning: Set
+length to a non-zero value, zero length buffers are interpreted as null-pointers
+in certain V8 APIs including the Fast API thanks to a V8 bug).
 
 Passing the buffer directly or passing the pointer object of the buffer is 100%
 equal in function from the native library point of view, the only difference is
-in what parameter type to declare.
+in what parameter type the Deno FFI symbol can be called with.
 
 Note that it is much quicker to get the pointer object of a buffer using
 `Deno.UnsafePointer.of()` than creating an ArrayBuffer from a pointer using
 `Deno.UnsafePointerView.getArrayBuffer()`. As such, if you have a symbol that
 will be called with both external pointers and owned buffers, it may be better
-to define it as taking a `"pointer"` parameter. Be careful of danging pointers,
-though.
+to define it as taking a `"pointer"` parameter.
 
 Passing in a too-small buffer as a pointer parameter will likely lead to
 undefined behaviour and can not be recommended in any circumstances. Note though
-that a zero-length buffer may be useful to signify the end pointer of an
-iterator.
+that a zero-length buffer subarray may be useful to signify the end pointer of
+an iterator.
 
 ### Pointer objects
 
@@ -62,28 +82,41 @@ exceptions:
 2. They are not extensibe, ie. their prototype cannot be changed and they cannot
    be assigned to.
 
-Usually pointer objects are expected to be received from FFI symbol calls that
-return pointers themselves, or created from buffers using the
-`Deno.UnsafePointer.of()` call.
+Generally pointer objects are received from FFI symbol calls that return
+pointers, or created from buffers using the `Deno.UnsafePointer.of()` call.
 
 However, sometimes there is a need for FFI libraries to create a pointer from a
-pointer value that they receive eg. inside a buffer. This means that a 64-bit
-integer must be read from a buffer and then a pointer created from that number.
-This can be done using the `Deno.UnsafePointer.create()` API. However, note that
-this is **really** dangerous! There is nothing stopping anyone from creating
-pointers with made-up numbers and calling a foreign library with those made-up
-pointers.
+pointer value that they receive eg. inside a buffer or through a pointer. For
+reading a pointer from through another pointer the
+`Deno.UnsafePointerView#getPointer` method can be used.
 
-What happens when that is done is totally undefined and depends entirely on
-where the pointer happens to point to. The program may crash with a segfault, or
-data may become corrupted and anything and everything may become possible.
+```ts
+const pointer = lib.symbols.get_pointer();
+const otherPointer = new Deno.UnsafePointerView(pointer).getPointer(offset);
+```
+
+When a pointer must be extracted from a buffer it means that a 64-bit integer
+must be read from the buffer and then a pointer created from that number. This
+can be done using the `Deno.UnsafePointer.create()` API.
+
+```ts
+const buffer = new Uint8Array(8);
+lib.symbols.write_pointer_into_buffer(buffer);
+const otherPointer = Deno.UnsafePointer.create(
+  new BigUint64Array(buffer.buffer)[0],
+);
+```
+
+However, note that this is **really** dangerous! There is nothing stopping
+anyone from creating pointers with made-up numbers and calling a foreign library
+with those made-up pointers (see [Security](../security) for more information on
+pointer creation).
 
 ### Null pointers
 
-Starting with Deno 1.31.0, all null pointers (though not null buffers) are
-represented using JavaScripts native `null`. The V8 Fast API also has support
-for `null` to stand for null pointers for the `"pointer"` parameter type but not
-for `"buffer"`.
+Starting with Deno 1.31.0, all null pointers (not null buffers) are represented
+using JavaScripts native `null`. The V8 Fast API also supports `null` to stand
+for null pointers for the `"pointer"` parameter type but not for `"buffer"`.
 
 For V8 Fast API support with `"buffer"` parameters it is possible to create a
 null pointer buffer using `new Uint8Array()` as V8 always creates a null pointer
@@ -98,7 +131,7 @@ Example:
 // Good way to create a null buffer ahead of time:
 const NULL = new Uint8Array();
 
-// Bad way create a null buffer inline:
+// Bad way to create a null buffer inline, this doesn't work properly:
 lib.symbols.call_with_buffer(new Uint8Array());
 ```
 
@@ -200,6 +233,9 @@ sort of wacky weirdness you find so I can enjoy it as well.
 
 ## Dangling pointers
 
+Concurrent access to buffers is "sus at best" but not doing anything with a
+buffer is also a recipe for disaster by way of dangling pointers.
+
 Before Deno 1.31 it was possible to create dangling pointers when a pointer
 object created from a buffer was used as a parameter without ensuring that the
 buffer did not get garbage collected.
@@ -207,36 +243,37 @@ buffer did not get garbage collected.
 this is no longer an issue as the pointer object is used as a key in a `WeakMap`
 that keeps the buffer alive for as long as the pointer object is alive.
 
-As such the following information is out of date:
-
-Concurrent access to buffers is "sus at best" but not doing anything with a
-buffer is also a recipe for disaster by way of dangling pointers. Here's an
-example:
+It is still possible to cause dangling pointers if you pass a buffer to a
+dynamic library and that library holds the pointer while you do not make sure
+that the buffer stays alive. Here's an example:
 
 ```ts
 // ffi.ts
 const STATIC_BUFFER = new Uint32Array(2);
-const STATIC_BUFFER_PTR = Deno.UnsafePointer.of(STATIC_BUFFER);
+
+lib.symbols.register_buffer(STATIC_BUFFER);
 
 export const callWithStaticBuffer = (pointer: Deno.PointerValue) => {
-  lib.symbols.call_pointer_with_u32x2(pointer, STATIC_BUFFER_PTR);
+  lib.symbols.call_pointer_with_implied_u32x2(pointer);
 };
 ```
 
-Looks simple enough: A buffer containing two 32-bit numbers is created and a
-pointer object referencing said buffer is then created from that. The
-`callWithStaticBuffer` function then uses the pointer object when calling an FFI
-symbol. There seems to be no direct issue with any of this, and that is not true
-at all.
+Looks simple enough: A buffer containing two 32-bit numbers is created and
+registered into a dynamic library using the `register_buffer` call. Then some
+other API `call_pointer_with_implied_u32x2` is called that would presumably
+internally use the `STATIC_BUFFER`'s memory somehow.
 
-This code will lead to undefined behaviour. The reason is simple: V8 will
-garbage collect the `STATIC_BUFFER` after the `STATIC_BUFFER_PTR` number has
-been created as it can tell that no one will ever access the buffer again. The
-memory will get reused and `call_pointer_with_u32x2` will find random data
-behind the second pointer it has been given.
+The issue is that the `STATIC_BUFFER` is only used once from a JavaScript point
+of view, and once the call to `register_buffer` ends it is no longer used.
+
+This will lead to undefined behaviour. The reason is simple: V8 will garbage
+collect the `STATIC_BUFFER` after the `register_buffer` call has been completed
+as it can tell that no one will ever access the buffer again. The memory will
+get reused and `call_pointer_with_u32x2` will find random data behind the second
+pointer it has been given.
 
 A possible fix might be to `export` the `STATIC_BUFFER`. Alternatively, assign
 the `STATIC_BUFFER` to an object that is then exported. Even if the
-`STATIC_BUFFER` is assigned using a `Symbol` that is not itself exported and
-thus the buffer isn't really accessible to code outside the `ffi.ts` it is still
-probably enough to keep the buffer from being garbage collected.
+`STATIC_BUFFER` is assigned using into a `Symbol` or `#private` so that the
+buffer isn't really accessible to code outside the `ffi.ts` it is still probably
+enough to keep the buffer from being garbage collected.
