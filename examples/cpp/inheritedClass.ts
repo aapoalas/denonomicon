@@ -176,14 +176,14 @@ const example_lib__InheritedClass__useData = new Deno.UnsafeCallback({
   result: "void",
 }, (self, data) => console.log("Got call from", self, "with data:", data));
 new BigUint64Array(VTABLE.buffer, 0, 1)[0] = BigInt(
-  example_lib__InheritedClass__useData.pointer,
+  Deno.UnsafePointer.value(example_lib__InheritedClass__useData.pointer),
 );
 
 const items = 7;
 const ptr_PartiallyVirtualClass__VTABLE = Array.from(
   new BigUint64Array(
     Deno.UnsafePointerView.getArrayBuffer(
-      lib.symbols.ptr_PartiallyVirtualClass__VTABLE,
+      lib.symbols.ptr_PartiallyVirtualClass__VTABLE!,
       items * 8,
     ),
     0,
@@ -194,7 +194,7 @@ const ptr_PartiallyVirtualClass__VTABLE = Array.from(
 const Dervied__VTABLE = Array.from(
   new BigUint64Array(
     Deno.UnsafePointerView.getArrayBuffer(
-      lib.symbols.ptr_Derived_VTABLE,
+      lib.symbols.ptr_Derived_VTABLE!,
       items * 8,
     ),
     0,
@@ -214,7 +214,9 @@ const first = new Uint8Array(6 * 8);
 lib.symbols.example_lib__PartiallyVirtualClass__Constructor(first, 13);
 const pointerview = new BigUint64Array(first.buffer, 0, 1);
 lib.symbols.example_lib__PartiallyVirtualClass__callDoDataMethod(first);
-pointerview[0] = BigInt(BigInt(lib.symbols.ptr_Derived_VTABLE) + 16n);
+pointerview[0] = BigInt(
+  BigInt(Deno.UnsafePointer.value(lib.symbols.ptr_Derived_VTABLE)) + 16n,
+);
 lib.symbols.example_lib__PartiallyVirtualClass__callDoDataMethod(first);
 
 const CUSTOM_VTABLE_BIG_INT = new BigUint64Array(6);
@@ -226,7 +228,7 @@ const CUSTOM_DESTRUCTOR_1 = new Deno.UnsafeCallback({
 }, (pointer) => {
   console.log("Destructor1:", pointer);
   lib.symbols.example_lib__PartiallyVirtualClass__Destructor(
-    new Uint8Array(Deno.UnsafePointerView.getArrayBuffer(pointer, 16)),
+    new Uint8Array(Deno.UnsafePointerView.getArrayBuffer(pointer!, 16)),
   );
 });
 const CUSTOM_DESTRUCTOR_0 = new Deno.UnsafeCallback({
@@ -249,12 +251,17 @@ const USE_DATA = new Deno.UnsafeCallback({
   console.log("doData:", pointer, data);
 });
 
-CUSTOM_VTABLE_BIG_INT[2] = BigInt(CUSTOM_DESTRUCTOR_1.pointer);
-CUSTOM_VTABLE_BIG_INT[3] = BigInt(CUSTOM_DESTRUCTOR_0.pointer);
-CUSTOM_VTABLE_BIG_INT[4] = BigInt(DO_DATA.pointer);
-CUSTOM_VTABLE_BIG_INT[5] = BigInt(USE_DATA.pointer);
+CUSTOM_VTABLE_BIG_INT[2] = BigInt(
+  Deno.UnsafePointer.value(CUSTOM_DESTRUCTOR_1.pointer),
+);
+CUSTOM_VTABLE_BIG_INT[3] = BigInt(
+  Deno.UnsafePointer.value(CUSTOM_DESTRUCTOR_0.pointer),
+);
+CUSTOM_VTABLE_BIG_INT[4] = BigInt(Deno.UnsafePointer.value(DO_DATA.pointer));
+CUSTOM_VTABLE_BIG_INT[5] = BigInt(Deno.UnsafePointer.value(USE_DATA.pointer));
 
-pointerview[0] = BigInt(Deno.UnsafePointer.of(CUSTOM_VTABLE)) + 16n;
+pointerview[0] =
+  BigInt(Deno.UnsafePointer.value(Deno.UnsafePointer.of(CUSTOM_VTABLE))) + 16n;
 lib.symbols.example_lib__PartiallyVirtualClass__callDoDataMethod(first);
 
 const LAMBDA_CALLBACK = new Deno.UnsafeCallback({
@@ -269,12 +276,12 @@ const lambdaPointer = lib.symbols
     first,
     lambdaBuffer,
     LAMBDA_CALLBACK.pointer,
-    12345,
+    Deno.UnsafePointer.create(12345),
   );
 const lambdaBufferBigInt = new BigUint64Array(first.buffer).subarray(2);
 
 const customLambda = new BigUint64Array(4);
-customLambda[0] = BigInt(LAMBDA_CALLBACK.pointer);
+customLambda[0] = BigInt(Deno.UnsafePointer.value(LAMBDA_CALLBACK.pointer));
 //console.log(getFoo(lambda))
 //lib.symbols.example_lib__PartiallyVirtualClass__callLambda(Deno.UnsafePointer.of(customLambda));
 lib.symbols.example_lib__PartiallyVirtualClass__callLambda(lambdaBuffer);
@@ -290,12 +297,16 @@ const aTableCbs = Array.from({ length: 4 }, (x, i) => {
   }, (p0, p1, p2, p3) => {
     console.log("A table, index", i, "parameters", p0, p1, p2, p3);
   });
-  LAMBDA_TABLE_A[i] = BigInt(cb.pointer);
+  LAMBDA_TABLE_A[i] = BigInt(Deno.UnsafePointer.value(cb.pointer));
   return cb;
 });
 
-customLambda[0] = BigInt(Deno.UnsafePointer.of(LAMBDA_DATA_TABLE));
-customLambda[2] = BigInt(Deno.UnsafePointer.of(LAMBDA_TABLE_A));
+customLambda[0] = BigInt(
+  Deno.UnsafePointer.value(Deno.UnsafePointer.of(LAMBDA_DATA_TABLE)),
+);
+customLambda[2] = BigInt(
+  Deno.UnsafePointer.value(Deno.UnsafePointer.of(LAMBDA_TABLE_A)),
+);
 const bTableCbs = Array.from({ length: 4 }, (x, i) => {
   const cb = new Deno.UnsafeCallback({
     parameters: [
@@ -312,18 +323,20 @@ const bTableCbs = Array.from({ length: 4 }, (x, i) => {
     console.log(params);
     console.log(
       params.map((x) =>
-        new Uint8Array(Deno.UnsafePointerView.getArrayBuffer(x, 8))
+        new Uint8Array(Deno.UnsafePointerView.getArrayBuffer(x!, 8))
       ),
     );
     return 12345;
   });
-  LAMBDA_TABLE_B[i] = BigInt(cb.pointer);
+  LAMBDA_TABLE_B[i] = BigInt(Deno.UnsafePointer.value(cb.pointer));
   return cb;
 });
 
 LAMBDA_DATA_TABLE[0] = 33n;
 LAMBDA_DATA_TABLE[1] = 33n;
-LAMBDA_DATA_TABLE[2] = BigInt(LAMBDA_CALLBACK.pointer);
+LAMBDA_DATA_TABLE[2] = BigInt(
+  Deno.UnsafePointer.value(LAMBDA_CALLBACK.pointer),
+);
 LAMBDA_DATA_TABLE[3] = 66567n;
 
 customLambda[3] = LAMBDA_TABLE_B[0];

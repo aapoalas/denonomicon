@@ -48,10 +48,27 @@ public:
 
 We have here four virtual methods, one of which is pure virtual and one is the
 destructor. As we already learned in the [C++ calling convention], C++ has three
-destructors of which 1 is often a duplicate. Thus, our actual number of virtual
-functions in this example is 5:
+destructors of which 1 is often a duplicate. These were the complete object
+destructor which deletes all base classes (including virtual), the base object
+destructor which only deletes concrete base classes, and finally the deleting
+destructor which does all that the complete object destructor does and also
+deallocates the memory behind the pointer.
 
-- 2 for the destructors (deleting, and complete / base)
+When we're deleting some `PartiallyVirtualClass*` pointer we do not know if the
+pointer points to the base class or some inherited version of it. Thus, if we
+want to completely destructure it we must call the deleting destructor or the
+complete object destructor (this if we want to keep its memory allocated for
+some reason). So these two destructors must be in the virtual table of the
+class.
+
+The third destructor, the base object destructor, is only called from an
+inheriting class' destructor. The inheriting class always knows which class it
+inherits and thus knows exactly what base object destructor it needs to call.
+This destructor is then not needed in the virtual table.
+
+Thus, our actual number of virtual functions in this example is 5:
+
+- 2 for the destructors (deleting and complete), and
 - 1 for each of the virtual methods.
 
 Additionally, our virtual table will need to hold a pointer to the object's
@@ -67,8 +84,8 @@ The final vtable looks like this:
 struct PartiallyVirtualClass_VTABLE {
     void* class_offset_, // This is 0 for our case
     void* type_info_,    // If library is built with `-fno-rtti` this is also 0
-    void* destructor_D1, // complete / base object destructor: For base class this is often 0 as well
-    void* destructor_D0, // deleting destructor: for base class this is often 0 as well
+    void* destructor_D1, // Complete object destructor: For base class this is often 0 as well
+    void* destructor_D0, // Deleting destructor: for base class this is often 0 as well
     void* doData_method,
     void* useData_method,
     void* maybeData_method,
