@@ -4,8 +4,7 @@ Deno FFI is an API in the `Deno` namespace that allows the Deno JavaScript /
 TypeScript runtime to access data and call functions from native dynamic
 libraries. On Linux a native library would be something like `libfoo.so`, while
 on Windows it would be `foo.dll`. Note that these are not executables. If
-running executables is required, then the `Deno.run` or `Deno.spawn` APIs can be
-used.
+running executables is required, then the `Deno.spawn` API can be used.
 
 Deno FFI works with native libraries that use the C API. As an example, Deno FFI
 cannot call Rust libraries that do not expose C APIs using the `external "C"`
