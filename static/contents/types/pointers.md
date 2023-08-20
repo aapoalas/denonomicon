@@ -202,9 +202,10 @@ sort of wacky weirdness you find so I can enjoy it as well.
 
 Before Deno 1.31 it was possible to create dangling pointers when a pointer
 object created from a buffer was used as a parameter without ensuring that the
-buffer did not get garbage collected. Since Deno 1.31 this is no longer an issue
-as the pointer object is used as a key in a `WeakMap` that keeps the buffer
-alive for as long as the pointer object is alive.
+buffer did not get garbage collected.
+[Since Deno 1.31](https://github.com/denoland/deno/commit/8db0d393c3451ca720f68a0237474f52adb99b39)
+this is no longer an issue as the pointer object is used as a key in a `WeakMap`
+that keeps the buffer alive for as long as the pointer object is alive.
 
 As such the following information is out of date:
 
