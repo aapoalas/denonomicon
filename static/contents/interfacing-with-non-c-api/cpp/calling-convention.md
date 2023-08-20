@@ -100,10 +100,9 @@ lib.symbols.lib__Example__Constructor(example, 313);
 For this class we only need 4 bytes worth of memory, since the class only has
 the single `int` data inside it. This information is not directly available
 anywhere and often needs to be either calculated or figured out through trial
-and error. For this particular example, the author expected the required size to
-be 8 but found that the upper 4 bytes of the `Uint8Array` were not being touched
-by the constructor and thus were not necessary. Often times a class will still
-have its size be a multiple of 8 on a 64-bit computer.
+and error. The size needed is determined by the C struct size calculations. This
+means that for instance a struct with a pointer and a boolean will be two
+pointers in size even though data wise it only requires 9 bytes (8 + 1).
 
 Note also the `C1` in our constructors' mangled name: C++ has three types of
 constructors (and destructors):
@@ -149,9 +148,8 @@ language that has a special mention in at least the [System V ABI].
 > parameter list by a pointer that has class INTEGER).
 
 What this means is that any C++ class instance with a copy constructor and/or
-destructor in its interface [citation needed, this may not apply if the
-implementations are empty] is never passed-in or returned by-value in a register
-even if it could fit in one.
+destructor in its interface is never passed-in or returned by-value in a
+register even if it could fit in one.
 
 Instead for parameters the instance is passed in by reference (ie. as a
 `"pointer"` or `"buffer"` in Deno FFI terms). For return values an extra zero'th
@@ -178,7 +176,10 @@ const lib = Deno.dlopen(
 const exampleBuffer = new Uint8Array(4);
 const pointer = lib.symbols.lib__Example__create(exampleBuffer, 16);
 // The returned pointer is the address of our passed-in buffer.
-assertEquals(pointer, Deno.UnsafePointer.of(exampleBuffer));
+assertEquals(
+  Deno.UnsafePointer.value(pointer),
+  Deno.UnsafePointer.value(Deno.UnsafePointer.of(exampleBuffer)),
+);
 ```
 
 Note: If you do not care for the returned pointer address, it is safe to set the
@@ -205,15 +206,15 @@ As we saw above with constructors, C++ also has multiple destructors per class.
 
 As with constructors, for a C++ class with no virtual base classes the first two
 are equivalent. D1 and D2 destructors do not call `free()` on the memory of the
-object, meaning that calling a C++ destructor from Deno on a `Uint8Array` is
-safe: C++ will not try to deallocate the underlying `ArrayBuffer`'s memory. As
-with constructors, you should always be calling the complete object destructor
-(`D1`) from Deno FFI.
+object, meaning that calling a D1 or D2 C++ destructor from Deno on a
+`Uint8Array` is safe: C++ will not try to deallocate the underlying
+`ArrayBuffer`'s memory. As with constructors, you should always be calling the
+complete object destructor (`D1`) from Deno FFI.
 
-If a class has a virtual destructor, however, then things can get interesting.
-The reason for a virtual destructor to exist is the following: Imagine you have
-a C++ base class `Base` and inherited variant `Derived`. Now, imagine you get a
-pointer to an instance of the base class and want to deallocate said instance:
+If a class has a virtual destructor then things can get interesting. The reason
+for a virtual destructor to exist is the following: Imagine you have a C++ base
+class `Base` and inherited variant `Derived`. Now, imagine you get a pointer to
+an instance of the base class and want to deallocate said instance:
 
 ```cpp
 void removeInstance(Base* instance) {
