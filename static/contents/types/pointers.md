@@ -32,7 +32,7 @@ to get a pointer object from a buffer using the `Deno.UnsafePointer.of()` static
 method (requires FFI permissions) for passing as a `"pointer"` type parameter.
 Similarly, it is possible to do the reverse using
 `Deno.UnsafePointerView.getArrayBuffer(pointer, 1)` (setting length as 0 would
-return a null pointer).
+return a null pointer backed buffer thanks to a V8 bug).
 
 Passing the buffer directly or passing the pointer object of the buffer is 100%
 equal in function from the native library point of view, the only difference is
@@ -199,6 +199,14 @@ behaviour. Do not do this. And when you do, send play-by-play documents of what
 sort of wacky weirdness you find so I can enjoy it as well.
 
 ## Dangling pointers
+
+Before Deno 1.31 it was possible to create dangling pointers when a pointer
+object created from a buffer was used as a parameter without ensuring that the
+buffer did not get garbage collected. Since Deno 1.31 this is no longer an issue
+as the pointer object is used as a key in a `WeakMap` that keeps the buffer
+alive for as long as the pointer object is alive.
+
+As such the following information is out of date:
 
 Concurrent access to buffers is "sus at best" but not doing anything with a
 buffer is also a recipe for disaster by way of dangling pointers. Here's an
