@@ -10,7 +10,7 @@ or a binary you downloaded off the Internet. Deno FFI cannot do things that a
 native binary couldn't do, so demons will not come flying out of your nose when
 you use it.
 
-Then the bad pars: Using FFI is just as dangerous as running `cargo build` or a
+Then the bad parts: Using FFI is just as dangerous as running `cargo build` or a
 binary you downloaded off the Internet: The FFI API gives all the code you run
 inside Deno the possibility to do anything and everything that a native binary
 could do. In this sense, `--allow-ffi` is very much like `--allow-all`.
